@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 
+// Game Board
 import Board from './Board'
+
 
 function Game(props){
   return (
@@ -11,8 +12,6 @@ function Game(props){
 }
 
 ReactDOM.render(
-  <React.StrictMode>
-    <Game />
-  </React.StrictMode>,
+  <Game />,
   document.getElementById('root')
 );
