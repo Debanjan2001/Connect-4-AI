@@ -1,19 +1,24 @@
 import React from 'react'
-import { Button, Grid,} from '@mui/material'
+import { Button, Grid, Stack,} from '@mui/material'
 import { useState } from 'react'
+
+import  Item  from '@mui/material/List'
 
 import checkGameStatus from './GameStatus'
 
+import Fab from '@mui/material/Fab';
+import NavigationIcon from '@mui/icons-material/Navigation';
+import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 const DiskHolder = (props) => {
   
     return (
         <Button
           variant = {props.diskHolderProperties.variant}
           color = {props.diskHolderProperties.color} 
-          sx={ { height:80,width:80,borderRadius: 100 } }
+          sx={ { height:60, width:70, borderRadius:100 } }
           onClick = {()=>props.onClick()}
         >
-          {props.value}
+            {/* {props.value} */}
         </Button>
     );
 }
@@ -32,8 +37,7 @@ const Board = () => {
       )
     );
 
-    const [gameText, setGameText] = useState("Current Turn: Player 1 ");
-
+    const [gameText, setGameText] = useState("");
     const [isPlayer1,setIsPlayer1] = useState(true);
 
     function togglePlayer(){
@@ -42,10 +46,16 @@ const Board = () => {
 
     const handleClick = (row, col) => {
         // row, col => where you clicked 
-        const current_matrix = matrix.slice();
+        const currentMatrix = matrix.slice();
+
+        const currentGameStatus = checkGameStatus(currentMatrix, numRows, numCols);
+        if(currentGameStatus > 0){
+          return;
+        }
+
         let rowToChange = -1;
         for(let i = 0; i < numRows; i++){
-            if(current_matrix[i][col]){
+            if(currentMatrix[i][col]){
               break;
             }
             rowToChange += 1;
@@ -53,25 +63,25 @@ const Board = () => {
         if(rowToChange < 0){
           return;
         }
-
-        current_matrix[rowToChange][col] = (isPlayer1 ? 1 : 2);
-        togglePlayer();
-        setMatrix(current_matrix);
+        currentMatrix[rowToChange][col] = (isPlayer1 ? 1 : 2);
+        
         // console.log(matrix);
         setGameText(getGameText());
+        setMatrix(currentMatrix);
+        togglePlayer();
     };
 
     const renderDiskHolder = (row, col)=>{
       let color = "";
       let variant = "null";
       if(matrix[row][col] === 1){
-        color = "error";
+        color = "userRed";
         variant = "contained";
       } else if (matrix[row][col] === 2){
-        color = "primary";
+        color = "userBlue";
         variant = "contained";
       } else{
-        color = "primary";
+        color = "info";
         variant = "outlined";
       }
 
@@ -92,15 +102,15 @@ const Board = () => {
 
     const renderDiskHolderRow = (row) => {
       return (
-        <div>
-          {renderDiskHolder(row,0)}
-          {renderDiskHolder(row,1)}
-          {renderDiskHolder(row,2)}
-          {renderDiskHolder(row,3)}
-          {renderDiskHolder(row,4)}
-          {renderDiskHolder(row,5)}
-          {renderDiskHolder(row,6)}
-        </div>
+        <Stack direction="row" spacing={1}>
+          <Item>{renderDiskHolder(row,0)}</Item>
+          <Item>{renderDiskHolder(row,1)}</Item>
+          <Item>{renderDiskHolder(row,2)}</Item>
+          <Item>{renderDiskHolder(row,3)}</Item>
+          <Item>{renderDiskHolder(row,4)}</Item>
+          <Item>{renderDiskHolder(row,5)}</Item>
+          <Item>{renderDiskHolder(row,6)}</Item>
+        </Stack>
       )
     }
 
@@ -109,7 +119,7 @@ const Board = () => {
       const currentPlayer = "Player " + (isPlayer1 ? "1" : "2");
       let textToShow = "";
       if(gameStatus === 0){
-        textToShow = "Current Turn: "+ currentPlayer ;
+        textToShow = "Last Turn: "+ currentPlayer ;
       } else if(gameStatus === 1 || gameStatus === 2){
         textToShow =  currentPlayer + " has won !" ;
       } else if (gameStatus === 3){
@@ -122,32 +132,53 @@ const Board = () => {
 
     return (
       
-      <Grid
-      container
-      direction="row"
-      justifyContent="space-evenly"
-      alignItems="center"
-      >
-
     <Grid
       container
       direction="row"
       justifyContent="space-evenly"
       alignItems="center"
-      >
-      <Grid item xs = {12}> { gameText }</Grid>
+    >
+        <Grid item
+        > 
+        <Stack direction="column" spacing={1}>
+          <Item>{renderDiskHolderRow(0)}</Item>
+          <Item>{renderDiskHolderRow(1)}</Item>
+          <Item>{renderDiskHolderRow(2)}</Item>
+          <Item>{renderDiskHolderRow(3)}</Item>
+          <Item>{renderDiskHolderRow(4)}</Item>
+          <Item>{renderDiskHolderRow(5)}</Item>
+        </Stack>
+
+        </Grid>
+
+        <Grid item>
+          <Stack>
+            <Item>
+              <Fab variant="extended" onClick={()=>{console.log("Start")}}>
+              {/* if else logic based fabicon */}
+              <PlayCircleFilledIcon sx={{ mr: 1 }} />
+                Start Game
+              </Fab>
+            </Item>
+
+            {/* if else logic based display */}
+            {false && 
+              <Item>
+                <Button>vs Enemy</Button>
+                <Button>vs CPU</Button>
+              </Item>
+            }
+
+            {/* if else logic based display */}
+            { gameText &&
+              <Item>
+              {gameText}
+              </Item>
+            }
+            
+          </Stack>
+        </Grid>
       </Grid>
-      <Grid item>Player Stats-1</Grid>
-      <Grid item>
-        {renderDiskHolderRow(0)}
-        {renderDiskHolderRow(1)}
-        {renderDiskHolderRow(2)}
-        {renderDiskHolderRow(3)}
-        {renderDiskHolderRow(4)}
-        {renderDiskHolderRow(5)}
-      </Grid>
-      <Grid item>Player Stats-2</Grid>
-    </Grid>
     );
 }
 

@@ -1,15 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-// Game Board
-import Board from './Board'
-
-
-function Game(props){
-  return (
-    <Board />
-  );
-}
+import Game from './Game';
 
 ReactDOM.render(
   <Game />,
