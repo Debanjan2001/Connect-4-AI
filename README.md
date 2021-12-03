@@ -1,3 +1,9 @@
+# Connect-4
+
+Current State:
+
+![Dev Server Screenshot](images/State1.png "Current Screenshot in Bob's system")
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
