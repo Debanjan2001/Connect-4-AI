@@ -10,16 +10,16 @@ import { red, blue } from '@mui/material/colors';
 
 const darkTheme = createTheme({
   palette: {
-      mode: 'dark',
-      userRed: {
-          main: red[600],
-      },
-      userBlue: {
-          main: blue[800],
-      },
-      userWhite:{
-        main:"#FFFFFF",
-      },
+    mode: 'dark',
+    userRed: {
+      main: red[600],
+    },
+    userBlue: {
+      main: blue[800],
+    },
+    userWhite: {
+      main: "#FFFFFF",
+    },
   },
 });
 
