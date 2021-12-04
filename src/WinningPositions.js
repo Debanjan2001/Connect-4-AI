@@ -17,11 +17,17 @@ const getWinningPositions = (matrix, numRows, numCols) => {
             for (const winningPosition of possibleWinningPositions) {
 
                 let allMarkedSame = true;
+                let allInsideMatrix = true;
 
                 for (const [x, y] of winningPosition) {
                     if (!isInsideMatrix(x, y)) {
+                        allInsideMatrix = false;
                         break;
                     }
+                }
+
+                if (!allInsideMatrix) {
+                    continue;
                 }
 
                 for (let index = 1; index < winningPosition.length; index++) {
@@ -36,7 +42,7 @@ const getWinningPositions = (matrix, numRows, numCols) => {
                 if (allMarkedSame) {
                     return winningPosition;
                 }
-            };
+            }
         }
     }
 
