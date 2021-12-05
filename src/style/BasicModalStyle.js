@@ -10,4 +10,4 @@ const BasicModalStyle = {
     p: 4,
 };
 
-export default BasicModalStyle
+export default BasicModalStyle;

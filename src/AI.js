@@ -9,8 +9,7 @@ Came across this blog and found the idea cool.
 https://medium.com/analytics-vidhya/artificial-intelligence-at-play-connect-four-minimax-algorithm-explained-3b5fc32e4a4f
 */
 
-import checkGameStatus from './GameStatus.js';
-
+import checkGameStatus from "./GameStatus.js";
 
 const AI_WIN_REWARD = 1000000;
 const PLAYER_WIN_PUNISHMENT = -1000000;
@@ -18,21 +17,18 @@ const PLAYER_WIN_PUNISHMENT = -1000000;
 // difficulty can be tuned using this.
 const MAX_DEPTH = 5;
 
-
-
 const numRows = 6;
 const numCols = 7;
 
-
 const getUnfilledColumns = (board) => {
-    let unfilledColumns = []
+    let unfilledColumns = [];
     for (let i = 0; i < numCols; i++) {
         if (!board[0][i]) {
             unfilledColumns.push(i);
         }
     }
     return unfilledColumns;
-}
+};
 
 const dropDisk = (board, col, value) => {
     for (let i = numRows - 1; i >= 0; i--) {
@@ -42,7 +38,7 @@ const dropDisk = (board, col, value) => {
             return;
         }
     }
-}
+};
 
 const removeLastFilledDisk = (board, col) => {
     for (let i = 0; i < numRows; i++) {
@@ -52,7 +48,7 @@ const removeLastFilledDisk = (board, col) => {
             return;
         }
     }
-}
+};
 
 const isThisTheEndGame = (board) => {
     const gameStatus = checkGameStatus(board, numRows, numCols);
@@ -60,7 +56,7 @@ const isThisTheEndGame = (board) => {
         return false;
     }
     return true;
-}
+};
 
 const rewardScheme = (board, AI_PIECE, PLAYER_PIECE) => {
     /*
@@ -69,21 +65,21 @@ const rewardScheme = (board, AI_PIECE, PLAYER_PIECE) => {
     */
 
     const isInsideBoard = (row, col) => {
-        return (row >= 0 && col >= 0 && row < numRows && col < numCols);
-    }
+        return row >= 0 && col >= 0 && row < numRows && col < numCols;
+    };
 
     const getWindowScore = (window) => {
         // window => an array of length 4 (could be diagonal cut,horizontal cut etc)
         let score = 0;
 
-        const freq = {}
+        const freq = {};
         for (const num of window) {
-            freq[num] = (freq[num] ? freq[num] + 1 : 1);
+            freq[num] = freq[num] ? freq[num] + 1 : 1;
         }
 
-        const countAI = (freq[AI_PIECE] ? freq[AI_PIECE] : 0);
-        const countPlayer = (freq[PLAYER_PIECE] ? freq[PLAYER_PIECE] : 0);
-        const countEmpty = (freq[0] ? freq[0] : 0);
+        const countAI = freq[AI_PIECE] ? freq[AI_PIECE] : 0;
+        const countPlayer = freq[PLAYER_PIECE] ? freq[PLAYER_PIECE] : 0;
+        const countEmpty = freq[0] ? freq[0] : 0;
         // console.log(countAI, countPlayer, countEmpty);
         if (countAI === 4) {
             score += 100;
@@ -110,18 +106,38 @@ const rewardScheme = (board, AI_PIECE, PLAYER_PIECE) => {
         }
 
         return score;
-    }
+    };
 
     let score = 0;
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numCols; j++) {
             const possibleWindowPositions = [
-                [[i, j], [i, j + 1], [i, j + 2], [i, j + 3]],
-                [[i, j], [i + 1, j], [i + 2, j], [i + 3, j]],
-                [[i, j], [i + 1, j + 1], [i + 2, j + 2], [i + 3, j + 3]],
-                [[i, j], [i + 1, j - 1], [i + 2, j - 2], [i + 3, j - 3]],
-            ]
+                [
+                    [i, j],
+                    [i, j + 1],
+                    [i, j + 2],
+                    [i, j + 3],
+                ],
+                [
+                    [i, j],
+                    [i + 1, j],
+                    [i + 2, j],
+                    [i + 3, j],
+                ],
+                [
+                    [i, j],
+                    [i + 1, j + 1],
+                    [i + 2, j + 2],
+                    [i + 3, j + 3],
+                ],
+                [
+                    [i, j],
+                    [i + 1, j - 1],
+                    [i + 2, j - 2],
+                    [i + 3, j - 3],
+                ],
+            ];
 
             for (const windowPosition of possibleWindowPositions) {
                 let isInside = true;
@@ -136,17 +152,26 @@ const rewardScheme = (board, AI_PIECE, PLAYER_PIECE) => {
                     continue;
                 }
 
-                const window = windowPosition.map(position => board[position[0]][position[1]]);
+                const window = windowPosition.map(
+                    (position) => board[position[0]][position[1]]
+                );
                 score += getWindowScore(window);
             }
         }
     }
 
     return score;
-}
+};
 
-const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER_PIECE) => {
-
+const miniMax = (
+    board,
+    depth,
+    alpha,
+    beta,
+    isMaximizingPlayer,
+    AI_PIECE,
+    PLAYER_PIECE
+) => {
     if (isThisTheEndGame(board)) {
         const gameStatus = checkGameStatus(board, numRows, numCols);
         if (gameStatus === AI_PIECE) {
@@ -174,7 +199,15 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER
 
         for (const col of unfilledColumns) {
             dropDisk(board, col, AI_PIECE);
-            const [currentScore, bestOpponentCol] = miniMax(board, depth + 1, alpha, beta, false, AI_PIECE, PLAYER_PIECE);
+            const [currentScore, bestOpponentCol] = miniMax(
+                board,
+                depth + 1,
+                alpha,
+                beta,
+                false,
+                AI_PIECE,
+                PLAYER_PIECE
+            );
             if (currentScore > bestScore) {
                 // console.log("yes");
                 bestScore = currentScore;
@@ -190,7 +223,6 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER
 
         const result = [bestScore, bestColumn];
         return result;
-
     } else {
         let bestScore = Number.POSITIVE_INFINITY;
         const randomIndex = Math.floor(Math.random() * unfilledColumns.length);
@@ -198,7 +230,15 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER
 
         for (const col of unfilledColumns) {
             dropDisk(board, col, PLAYER_PIECE);
-            const [currentScore, bestOpponentCol] = miniMax(board, depth + 1, alpha, beta, true, AI_PIECE, PLAYER_PIECE);
+            const [currentScore, bestOpponentCol] = miniMax(
+                board,
+                depth + 1,
+                alpha,
+                beta,
+                true,
+                AI_PIECE,
+                PLAYER_PIECE
+            );
 
             if (currentScore < bestScore) {
                 bestScore = currentScore;
@@ -216,6 +256,6 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER
         const result = [bestScore, bestColumn];
         return result;
     }
-}
+};
 
 export default miniMax;

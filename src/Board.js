@@ -6,7 +6,6 @@ import { Box } from "@mui/system";
 
 import BasicModalStyle from "./style/BasicModalStyle";
 
-
 const DiskHolder = (props) => {
     const winningPosition = props.winningPosition;
     const row = props.rowId;
@@ -17,9 +16,9 @@ const DiskHolder = (props) => {
             sx={{
                 border:
                     winningPosition &&
-                        winningPosition.findIndex(
-                            (x) => x[0] === row && x[1] === col
-                        ) >= 0
+                    winningPosition.findIndex(
+                        (x) => x[0] === row && x[1] === col
+                    ) >= 0
                         ? 1
                         : 0,
             }}
@@ -43,7 +42,6 @@ const Board = (props) => {
     const winningPosition = props.winningPosition;
     const handleCloseInvalidClickModal = props.handleCloseInvalidClickModal;
     const openInvalidClickModal = props.openInvalidClickModal;
-
 
     // console.log(winningPosition);
 
@@ -119,7 +117,9 @@ const Board = (props) => {
                             Message from Connect-4
                         </Typography>
                         <Typography id='modal-modal-description' sx={{ mt: 2 }}>
-                            Please Select 'Start Game' first and then click there. Select anywhere outside this box to close this message.
+                            Please Select 'Start Game' first and then click
+                            there. Select anywhere outside this box to close
+                            this message.
                         </Typography>
                     </Box>
                 </Modal>

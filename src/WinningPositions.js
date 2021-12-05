@@ -1,21 +1,38 @@
 const getWinningPositions = (matrix, numRows, numCols) => {
-
     const isInsideMatrix = (row, col) => {
-        return (row >= 0 && row < numRows && col >= 0 && col < numCols);
+        return row >= 0 && row < numRows && col >= 0 && col < numCols;
     };
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numCols; j++) {
-
             const possibleWinningPositions = [
-                [[i, j], [i, j + 1], [i, j + 2], [i, j + 3]],
-                [[i, j], [i + 1, j], [i + 2, j], [i + 3, j]],
-                [[i, j], [i + 1, j + 1], [i + 2, j + 2], [i + 3, j + 3]],
-                [[i, j], [i + 1, j - 1], [i + 2, j - 2], [i + 3, j - 3]],
-            ]
+                [
+                    [i, j],
+                    [i, j + 1],
+                    [i, j + 2],
+                    [i, j + 3],
+                ],
+                [
+                    [i, j],
+                    [i + 1, j],
+                    [i + 2, j],
+                    [i + 3, j],
+                ],
+                [
+                    [i, j],
+                    [i + 1, j + 1],
+                    [i + 2, j + 2],
+                    [i + 3, j + 3],
+                ],
+                [
+                    [i, j],
+                    [i + 1, j - 1],
+                    [i + 2, j - 2],
+                    [i + 3, j - 3],
+                ],
+            ];
 
             for (const winningPosition of possibleWinningPositions) {
-
                 let allMarkedSame = true;
                 let allInsideMatrix = true;
 
@@ -48,6 +65,6 @@ const getWinningPositions = (matrix, numRows, numCols) => {
     }
 
     return null;
-}
+};
 
 export default getWinningPositions;
