@@ -6,28 +6,11 @@ import { Box } from "@mui/system";
 
 import BasicModalStyle from "./style/BasicModalStyle";
 
-/*
-Future Possible Feature - Drop Animation 
-const DropDownAnimation = () => {
-    return (
-        <Stack direction='row' spacing={1}>
-            <Item>hello</Item>
-            <Item>hello</Item>
-            <Item>hello</Item>
-            <Item>hello</Item>
-            <Item>hello</Item>
-            <Item>hello</Item>
-            <Item>hello</Item>
-        </Stack>
-    );
-};
-*/
 
 const DiskHolder = (props) => {
     const winningPosition = props.winningPosition;
     const row = props.rowId;
     const col = props.colId;
-    // console.log(row,col, winningPosition);
 
     return (
         <Box

@@ -6,8 +6,6 @@ import getWinningPositions from './WinningPositions.js';
 
 const numRows = 6;
 const numCols = 7;
-const AI_PIECE = 2;
-const PLAYER_PIECE = 1;
 
 const isBoardFilled = (board) => {
     for (let i = 0; i < numRows; i++) {
@@ -57,7 +55,7 @@ const removeLastFilledDisk = (board, col) => {
     }
 }
 
-const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
+const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER_PIECE) => {
 
     if (isGameWonBySomeone(board)) {
         if (depth % 2 === 0) {
@@ -80,7 +78,7 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
 
     const unfilledColumns = getUnfilledColumns(board);
 
-    if (depth > 5) {
+    if (depth > 7) {
         let result = [0, -1];
         if (unfilledColumns) {
             const randomIndex = Math.floor(Math.random() * unfilledColumns.length);
@@ -97,7 +95,7 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
 
         for (const col of unfilledColumns) {
             dropDisk(board, col, AI_PIECE);
-            const [currentScore, bestOpponentCol] = miniMax(board, depth + 1, alpha, beta, false);
+            const [currentScore, bestOpponentCol] = miniMax(board, depth + 1, alpha, beta, false, AI_PIECE, PLAYER_PIECE);
             if (currentScore > bestScore) {
                 bestScore = currentScore;
                 bestColumn = col;
@@ -120,7 +118,7 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
 
         for (const col of unfilledColumns) {
             dropDisk(board, col, PLAYER_PIECE);
-            const [currentScore, bestOpponentCol] = miniMax(board, depth + 1, alpha, beta, true);
+            const [currentScore, bestOpponentCol] = miniMax(board, depth + 1, alpha, beta, true, AI_PIECE, PLAYER_PIECE);
 
             if (currentScore < bestScore) {
                 bestScore = currentScore;
@@ -140,41 +138,54 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
     }
 }
 
-/*
-A Small Test To check if AI is winning or not.
-const board = [
-    // Test
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 2, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0],
-    [0, 0, 0, 1, 1, 2, 0],
 
-]
+// // A Small Test To check if AI is winning or not.
+// const board = [
+//     // Test
+//     [0, 0, 0, 0, 0, 0, 0],
+//     [0, 0, 0, 0, 0, 0, 0],
+//     [0, 0, 0, 0, 2, 0, 0],
+//     [0, 0, 0, 1, 2, 0, 0],
+//     [0, 0, 0, 1, 2, 0, 0],
+//     [0, 0, 0, 1, 1, 2, 0],
 
-const win = [
-    // Test
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 2, 0, 0],
-    [0, 0, 0, 0, 2, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0],
-    [0, 0, 0, 1, 1, 2, 0],
-]
+// ]
 
-const alpha = Number.NEGATIVE_INFINITY;
-const beta = Number.POSITIVE_INFINITY;
+// const win = [
+//     // Test
+//     [0, 0, 0, 0, 0, 0, 0],
+//     [0, 0, 0, 0, 2, 0, 0],
+//     [0, 0, 0, 0, 2, 0, 0],
+//     [0, 0, 0, 1, 2, 0, 0],
+//     [0, 0, 0, 1, 2, 0, 0],
+//     [0, 0, 0, 1, 1, 2, 0],
+// ]
 
-console.log(
-    miniMax(
-        board,
-        0, 
-        alpha, 
-        beta, 
-        true
-    )
-);
-*/
+// const alpha = Number.NEGATIVE_INFINITY;
+// const beta = Number.POSITIVE_INFINITY;
 
+// console.log(
+//     miniMax(
+//         board,
+//         0,
+//         alpha,
+//         beta,
+//         true,
+//         2,
+//         1
+//     )
+// );
+
+// console.log(
+//     miniMax(
+//         board,
+//         0,
+//         alpha,
+//         beta,
+//         true,
+//         1,
+//         2,
+
+//     )
+// );
 export default miniMax;

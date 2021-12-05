@@ -34,94 +34,69 @@ const Game = () => {
     gameTextMUIBackground: "error",
   });
   const [winningPosition, setWinningPosition] = useState(null);
+  const [aiValue, setAIValue] = useState(0);
+  const [openInvalidClickModal, setOpenInvalidClickModal] = useState(false);
+  const [openStartGameModal, setOpenStartGameModal] = useState(false);
+  const [lastPlayer, setLastPlayer] = useState(0);
+  const [gameMode, setGameMode] = useState(0);
 
 
   const dropDisk = (board, col, value) => {
     for (let i = numRows - 1; i >= 0; i--) {
       if (!board[i][col]) {
         board[i][col] = value;
-        return;
+        return true;
       }
     }
+    return false;
   }
 
-  const [aiValue, setAIValue] = useState(0);
+  const getNextPlayer = (currentPlayer) => {
+    if (currentPlayer === 0 || currentPlayer === 2) {
+      return 1;
+    }
+    return 2;
+  }
 
   const updateDisplayGameText = () => {
     const gameStatus = checkGameStatus(matrix, numRows, numCols);
-    const currentPlayer = ((lastPlayer === 1) ? 2 : 1);
+
+    // who the fuck clicked the board now?
+    const currentPlayer = getNextPlayer(lastPlayer);
+    const nextPlayer = getNextPlayer(currentPlayer);
 
     let displayText = "";
     if (gameStatus === 0) {
-      displayText = "Current Turn: " + (gameMode === 1 ? ("Player " + currentPlayer) + (currentPlayer === 1 ? "(Red)" : "(Blue)") : ((currentPlayer === aiValue) ? "AI" : "Player"));
+      // ongoing
+      displayText = "Current Turn: " + (gameMode === 1 ? (("Player " + nextPlayer) + (nextPlayer === 1 ? "(Red)" : "(Blue)")) : ("Player"));
+      setGameTextObject({
+        gameText: displayText,
+        gameTextMUIBackground: (gameMode === 1 ? ((nextPlayer === 1) ? "error" : "info") : (aiValue === 1 ? "info" : "error")),
+      })
     } else if (gameStatus === 1 || gameStatus === 2) {
+      // someone has won
       if (gameMode === 1) {
         displayText = "Player " + currentPlayer + (currentPlayer === 1 ? "(Red)" : "(Blue)") + " Has Won !";
+        setGameTextObject({
+          gameText: displayText,
+          gameTextMUIBackground: (currentPlayer === 1) ? "error" : "info",
+        })
       } else {
         displayText = ((aiValue === gameStatus) ? "AI" : "Player") + " Has Won !";
+        setGameTextObject({
+          gameText: displayText,
+          gameTextMUIBackground: (gameStatus === 1) ? "error" : "info",
+        })
       }
     } else if (gameStatus === 3) {
+      // draw
       displayText = "Game Draw !"
-    }
-    setGameTextObject({
-      gameText: displayText,
-      gameTextMUIBackground: (currentPlayer === 1) ? "error" : "info",
-    })
-  }
-
-
-  const handleOpenStartGameModal = () => {
-    setOpenStartGameModal(true);
-  }
-
-  const handleResetGame = () => {
-
-    const currentMatrix = matrix.slice();
-    for (let i = 0; i < numRows; i++) {
-      for (let j = 0; j < numCols; j++) {
-        currentMatrix[i][j] = 0;
-      }
+      setGameTextObject({
+        gameText: displayText,
+        gameTextMUIBackground: "warning",
+      })
     }
 
-    setMatrix(currentMatrix);
-    setGameStarted(false);
-    setResetGame(true);
-    setLastPlayer(0);
-    setGameTextObject({
-      gameText: "",
-      gameTextMUIBackground: "error",
-    }); // could be confusing to others ?? is it?
-    setWinningPosition(null);
-  }
-
-  const [openInvalidClickModal, setOpenInvalidClickModal] = useState(false);
-
-  const handleCloseInvalidClickModal = () => {
-    setOpenInvalidClickModal(false);
-  }
-
-  const [openStartGameModal, setOpenStartGameModal] = useState(false);
-
-  const handleCloseStartGameModal = () => {
-    setOpenStartGameModal(false);
-  }
-
-  const [lastPlayer, setLastPlayer] = useState(1);
-  const [gameMode, setGameMode] = useState(0);
-
-  const makeMoveWithAI = (board, AI_VALUE) => {
-    // make the best possible move on the board;
-    // arrays are passed by reference, so we dont need to return the new board state as well.
-    const [depth, alpha, beta, isMaximizingPlayer] = [0, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, true]
-    const [bestScore, bestColumn] = miniMax(
-      board,
-      depth,
-      alpha,
-      beta,
-      isMaximizingPlayer
-    )
-
-    dropDisk(board, bestColumn, AI_VALUE);
   }
 
   const handleGameModeSelection = (choiceID) => {
@@ -148,7 +123,6 @@ const Game = () => {
         // we dont need to do anything
         // player will initiate his move
         // maybe we can setup the game text and all
-
       } else if (AI_VALUE === 1) {
         // ai needs to play asap.
         const currentMatrix = matrix.slice();
@@ -161,10 +135,62 @@ const Game = () => {
         gameText: "Current Turn: Player",
         gameTextMUIBackground: (PLAYER_VALUE === 1 ? "error" : "info"),
       });
+    }
+  }
 
+  const handleOpenStartGameModal = () => {
+    setOpenStartGameModal(true);
+  }
+
+  const handleCloseStartGameModal = () => {
+    setOpenStartGameModal(false);
+  }
+
+
+  const handleResetGame = () => {
+
+    const currentMatrix = matrix.slice();
+    for (let i = 0; i < numRows; i++) {
+      for (let j = 0; j < numCols; j++) {
+        currentMatrix[i][j] = 0;
+      }
     }
 
+    setMatrix(currentMatrix);
+    setGameStarted(false);
+    setResetGame(true);
+    setLastPlayer(0);
+    setGameTextObject({
+      gameText: "",
+      gameTextMUIBackground: "error",
+    }); // could be confusing to others ?? is it?
+    setWinningPosition(null);
   }
+
+
+  const handleCloseInvalidClickModal = () => {
+    setOpenInvalidClickModal(false);
+  }
+
+
+  const makeMoveWithAI = (board, AI_VALUE) => {
+    // make the best possible move on the board;
+    // arrays are passed by reference, so we dont need to return the new board state as well.
+    const [depth, alpha, beta, isMaximizingPlayer] = [0, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, true]
+    const [bestScore, bestColumn] = miniMax(
+      board,
+      depth,
+      alpha,
+      beta,
+      isMaximizingPlayer,
+      AI_VALUE,
+      getNextPlayer(AI_VALUE),
+    )
+
+    dropDisk(board, bestColumn, AI_VALUE);
+  }
+
+
 
   const handleBoardClick = (row, col) => {
     // row, col => where you clicked 
@@ -180,29 +206,33 @@ const Game = () => {
       return;
     }
 
-    let currPlayer = 1;
-    if (lastPlayer === 1) {
-      currPlayer = 2;
-    }
+    const currPlayer = getNextPlayer(lastPlayer);
 
     if (gameMode === 1) {
       // multiplayer and someone clicked
-      dropDisk(currentMatrix, col, currPlayer);
+      const success = dropDisk(currentMatrix, col, currPlayer);
+      if (!success) {
+        return;
+      }
+      setLastPlayer(currPlayer);
 
     } else if (gameMode === 2) {
       // AI battle and someone clicked
       // so you drop and then force the AI to play.
-      dropDisk(currentMatrix, col, currPlayer);
+      const success = dropDisk(currentMatrix, col, currPlayer);
+      if (!success) {
+        return;
+      }
       setMatrix(currentMatrix);
-      currPlayer = (currPlayer === 1) ? 2 : 1;
+      const nextPlayer = getNextPlayer(currPlayer);
       // its time for AI;
-      makeMoveWithAI(currentMatrix, currPlayer);
+      makeMoveWithAI(currentMatrix, nextPlayer);
+      setLastPlayer(nextPlayer);
     }
 
     setWinningPosition(getWinningPositions(currentMatrix, numRows, numCols));
     setMatrix(currentMatrix);
     updateDisplayGameText();
-    setLastPlayer(currPlayer);
   };
 
   return (
