@@ -1,12 +1,13 @@
+/*
+Reference : https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-4-alpha-beta-pruning/
+*/
+
 import getWinningPositions from './WinningPositions.js';
 
 const numRows = 6;
 const numCols = 7;
 const AI_PIECE = 2;
 const PLAYER_PIECE = 1;
-const alpha = Number.NEGATIVE_INFINITY;
-const beta = Number.POSITIVE_INFINITY;
-
 
 const isBoardFilled = (board) => {
     for (let i = 0; i < numRows; i++) {
@@ -60,11 +61,13 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
 
     if (isGameWonBySomeone(board)) {
         if (depth % 2 === 0) {
-            // after AI (Maximizer) drops, a win is achieved
+            // after Player (Minimizer) drops, a win is achieved
+            // Hence, Punish your AI
             const result = [-1000, -1];
             return result;
         } else {
-            // after Player (Minimizer) drops, a win is achieved
+            // after AI (Maximizer) drops, a win is achieved
+            // Hence Reward your AI
             const result = [+1000, -1];
             return result;
         }
@@ -75,20 +78,25 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
         return result;
     }
 
-    if (depth > 5) {
-        return [0, -1];
-    }
-
-
     const unfilledColumns = getUnfilledColumns(board);
+
+    if (depth > 5) {
+        let result = [0, -1];
+        if (unfilledColumns) {
+            const randomIndex = Math.floor(Math.random() * unfilledColumns.length);
+            const col = unfilledColumns[randomIndex];
+            result = [0, col];
+        }
+        return result;
+    }
 
     if (isMaximizingPlayer) {
         let bestScore = Number.NEGATIVE_INFINITY;
-        let bestColumn = unfilledColumns[0];
+        const randomIndex = Math.floor(Math.random() * unfilledColumns.length);
+        let bestColumn = unfilledColumns[randomIndex];
 
         for (const col of unfilledColumns) {
             dropDisk(board, col, AI_PIECE);
-            // console.log("hello1\n", board);
             const [currentScore, bestOpponentCol] = miniMax(board, depth + 1, alpha, beta, false);
             if (currentScore > bestScore) {
                 bestScore = currentScore;
@@ -96,7 +104,6 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
             }
             alpha = Math.max(alpha, bestScore);
             removeLastFilledDisk(board, col);
-            // console.log("hello2\n", board);
 
             if (beta <= alpha) {
                 break;
@@ -107,8 +114,9 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
         return result;
 
     } else {
-        let bestScore = Number.POSITIVE_INFINITY;
-        let bestColumn = unfilledColumns[0];
+        let bestScore = Number.NEGATIVE_INFINITY;
+        const randomIndex = Math.floor(Math.random() * unfilledColumns.length);
+        let bestColumn = unfilledColumns[randomIndex];
 
         for (const col of unfilledColumns) {
             dropDisk(board, col, PLAYER_PIECE);
@@ -133,6 +141,7 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer) => {
 }
 
 /*
+A Small Test To check if AI is winning or not.
 const board = [
     // Test
     [0, 0, 0, 0, 0, 0, 0],
@@ -152,11 +161,20 @@ const win = [
     [0, 0, 0, 1, 2, 0, 0],
     [0, 0, 0, 1, 2, 0, 0],
     [0, 0, 0, 1, 1, 2, 0],
-
 ]
 
-console.log(miniMax(board, 0, alpha, beta, true));
+const alpha = Number.NEGATIVE_INFINITY;
+const beta = Number.POSITIVE_INFINITY;
 
+console.log(
+    miniMax(
+        board,
+        0, 
+        alpha, 
+        beta, 
+        true
+    )
+);
 */
 
 export default miniMax;

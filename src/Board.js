@@ -1,8 +1,10 @@
 import React from "react";
-import { Button, Grid, Stack } from "@mui/material";
+import { Button, Grid, Modal, Stack, Typography } from "@mui/material";
 
 import Item from "@mui/material/List";
 import { Box } from "@mui/system";
+
+import BasicModalStyle from "./style/BasicModalStyle";
 
 /*
 Future Possible Feature - Drop Animation 
@@ -56,6 +58,9 @@ const Board = (props) => {
     // const numRows = matrix.length;
     const numCols = matrix[0].length;
     const winningPosition = props.winningPosition;
+    const handleCloseInvalidClickModal = props.handleCloseInvalidClickModal;
+    const openInvalidClickModal = props.openInvalidClickModal;
+
 
     // console.log(winningPosition);
 
@@ -115,6 +120,27 @@ const Board = (props) => {
             <Item>{renderDiskHolderRow(3)}</Item>
             <Item>{renderDiskHolderRow(4)}</Item>
             <Item>{renderDiskHolderRow(5)}</Item>
+            <Item>
+                <Modal
+                    open={openInvalidClickModal}
+                    onClose={handleCloseInvalidClickModal}
+                    aria-labelledby='modal-modal-title'
+                    aria-describedby='modal-modal-description'
+                >
+                    <Box sx={BasicModalStyle}>
+                        <Typography
+                            id='modal-modal-title'
+                            variant='h6'
+                            component='h2'
+                        >
+                            Message from Connect-4
+                        </Typography>
+                        <Typography id='modal-modal-description' sx={{ mt: 2 }}>
+                            Please Select 'Start Game' first and then click there. Select anywhere outside this box to close this message.
+                        </Typography>
+                    </Box>
+                </Modal>
+            </Item>
         </Grid>
     );
 };

@@ -33,6 +33,7 @@ const getWinningPositions = (matrix, numRows, numCols) => {
                 for (let index = 1; index < winningPosition.length; index++) {
                     const [x1, y1] = winningPosition[index];
                     const [x2, y2] = winningPosition[index - 1];
+                    // console.log(matrix, x1);
                     if (!matrix[x1][y1] || matrix[x1][y1] !== matrix[x2][y2]) {
                         allMarkedSame = false;
                         break;
