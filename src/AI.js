@@ -1,29 +1,28 @@
 /*
 Reference : https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-4-alpha-beta-pruning/
+First AI was designed to help itself i.e it will try to form a block of four and if opponent does that, it will get punished.
+Very Trivial but it was really interesting to learn how to design a game with AI.
+
+Improvements in AI :
+Realized that better rewarding and punishment was required in the basic AI
+Came across this blog and found the idea cool.
+https://medium.com/analytics-vidhya/artificial-intelligence-at-play-connect-four-minimax-algorithm-explained-3b5fc32e4a4f
 */
 
-import getWinningPositions from './WinningPositions.js';
+import checkGameStatus from './GameStatus.js';
+
+
+const AI_WIN_REWARD = 1000000;
+const PLAYER_WIN_PUNISHMENT = -1000000;
+
+// difficulty can be tuned using this.
+const MAX_DEPTH = 5;
+
+
 
 const numRows = 6;
 const numCols = 7;
 
-const isBoardFilled = (board) => {
-    for (let i = 0; i < numRows; i++) {
-        for (let j = 0; j < numCols; j++) {
-            if (!board[i][j]) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-const isGameWonBySomeone = (board) => {
-    if (getWinningPositions(board, numRows, numCols)) {
-        return true;
-    }
-    return false;
-}
 
 const getUnfilledColumns = (board) => {
     let unfilledColumns = []
@@ -55,38 +54,118 @@ const removeLastFilledDisk = (board, col) => {
     }
 }
 
-const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER_PIECE) => {
+const isThisTheEndGame = (board) => {
+    const gameStatus = checkGameStatus(board, numRows, numCols);
+    if (gameStatus === 0) {
+        return false;
+    }
+    return true;
+}
 
-    if (isGameWonBySomeone(board)) {
-        if (depth % 2 === 0) {
-            // after Player (Minimizer) drops, a win is achieved
-            // Hence, Punish your AI
-            const result = [-1000, -1];
-            return result;
-        } else {
-            // after AI (Maximizer) drops, a win is achieved
-            // Hence Reward your AI
-            const result = [+1000, -1];
-            return result;
+const rewardScheme = (board, AI_PIECE, PLAYER_PIECE) => {
+    /*
+    1. generate windows of length  4 
+    2. Based on different configuration of opponent and AI, either reward or punish
+    */
+
+    const isInsideBoard = (row, col) => {
+        return (row >= 0 && col >= 0 && row < numRows && col < numCols);
+    }
+
+    const getWindowScore = (window) => {
+        // window => an array of length 4 (could be diagonal cut,horizontal cut etc)
+        let score = 0;
+
+        const freq = {}
+        for (const num of window) {
+            freq[num] = (freq[num] ? freq[num] + 1 : 1);
+        }
+
+        const countAI = (freq[AI_PIECE] ? freq[AI_PIECE] : 0);
+        const countPlayer = (freq[PLAYER_PIECE] ? freq[PLAYER_PIECE] : 0);
+        const countEmpty = (freq[0] ? freq[0] : 0);
+        // console.log(countAI, countPlayer, countEmpty);
+        if (countAI === 4) {
+            score += 100;
+        }
+        if (countAI === 3 && countEmpty === 1) {
+            score += 5;
+        }
+        if (countAI === 2 && countEmpty === 2) {
+            score += 2;
+        }
+        if (countAI === 3 && countPlayer === 1) {
+            score -= 5;
+        }
+        if (countPlayer === 3 && countEmpty === 1) {
+            score -= 4;
+        }
+
+        if (countPlayer === 2 && countEmpty === 2) {
+            score -= 20;
+        }
+
+        if (countPlayer === 3 && countAI === 1) {
+            score += 10000;
+        }
+
+        return score;
+    }
+
+    let score = 0;
+
+    for (let i = 0; i < numRows; i++) {
+        for (let j = 0; j < numCols; j++) {
+            const possibleWindowPositions = [
+                [[i, j], [i, j + 1], [i, j + 2], [i, j + 3]],
+                [[i, j], [i + 1, j], [i + 2, j], [i + 3, j]],
+                [[i, j], [i + 1, j + 1], [i + 2, j + 2], [i + 3, j + 3]],
+                [[i, j], [i + 1, j - 1], [i + 2, j - 2], [i + 3, j - 3]],
+            ]
+
+            for (const windowPosition of possibleWindowPositions) {
+                let isInside = true;
+                for (const [row, col] of windowPosition) {
+                    if (!isInsideBoard(row, col)) {
+                        isInside = false;
+                        break;
+                    }
+                }
+
+                if (!isInside) {
+                    continue;
+                }
+
+                const window = windowPosition.map(position => board[position[0]][position[1]]);
+                score += getWindowScore(window);
+            }
         }
     }
 
-    if (isBoardFilled(board)) {
-        const result = [0, -1];
+    return score;
+}
+
+const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER_PIECE) => {
+
+    if (isThisTheEndGame(board)) {
+        const gameStatus = checkGameStatus(board, numRows, numCols);
+        if (gameStatus === AI_PIECE) {
+            return [AI_WIN_REWARD, -1];
+        } else if (gameStatus === PLAYER_PIECE) {
+            return [PLAYER_WIN_PUNISHMENT, -1];
+        } else {
+            // draw
+            return [0, -1];
+        }
+    }
+
+    if (depth >= MAX_DEPTH) {
+        const result = [rewardScheme(board, AI_PIECE, PLAYER_PIECE), -1];
+        // console.log(result);
         return result;
     }
 
     const unfilledColumns = getUnfilledColumns(board);
-
-    if (depth > 7) {
-        let result = [0, -1];
-        if (unfilledColumns) {
-            const randomIndex = Math.floor(Math.random() * unfilledColumns.length);
-            const col = unfilledColumns[randomIndex];
-            result = [0, col];
-        }
-        return result;
-    }
 
     if (isMaximizingPlayer) {
         let bestScore = Number.NEGATIVE_INFINITY;
@@ -97,6 +176,7 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER
             dropDisk(board, col, AI_PIECE);
             const [currentScore, bestOpponentCol] = miniMax(board, depth + 1, alpha, beta, false, AI_PIECE, PLAYER_PIECE);
             if (currentScore > bestScore) {
+                // console.log("yes");
                 bestScore = currentScore;
                 bestColumn = col;
             }
@@ -112,7 +192,7 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER
         return result;
 
     } else {
-        let bestScore = Number.NEGATIVE_INFINITY;
+        let bestScore = Number.POSITIVE_INFINITY;
         const randomIndex = Math.floor(Math.random() * unfilledColumns.length);
         let bestColumn = unfilledColumns[randomIndex];
 
@@ -138,54 +218,4 @@ const miniMax = (board, depth, alpha, beta, isMaximizingPlayer, AI_PIECE, PLAYER
     }
 }
 
-
-// // A Small Test To check if AI is winning or not.
-// const board = [
-//     // Test
-//     [0, 0, 0, 0, 0, 0, 0],
-//     [0, 0, 0, 0, 0, 0, 0],
-//     [0, 0, 0, 0, 2, 0, 0],
-//     [0, 0, 0, 1, 2, 0, 0],
-//     [0, 0, 0, 1, 2, 0, 0],
-//     [0, 0, 0, 1, 1, 2, 0],
-
-// ]
-
-// const win = [
-//     // Test
-//     [0, 0, 0, 0, 0, 0, 0],
-//     [0, 0, 0, 0, 2, 0, 0],
-//     [0, 0, 0, 0, 2, 0, 0],
-//     [0, 0, 0, 1, 2, 0, 0],
-//     [0, 0, 0, 1, 2, 0, 0],
-//     [0, 0, 0, 1, 1, 2, 0],
-// ]
-
-// const alpha = Number.NEGATIVE_INFINITY;
-// const beta = Number.POSITIVE_INFINITY;
-
-// console.log(
-//     miniMax(
-//         board,
-//         0,
-//         alpha,
-//         beta,
-//         true,
-//         2,
-//         1
-//     )
-// );
-
-// console.log(
-//     miniMax(
-//         board,
-//         0,
-//         alpha,
-//         beta,
-//         true,
-//         1,
-//         2,
-
-//     )
-// );
 export default miniMax;
