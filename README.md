@@ -1,5 +1,7 @@
 # Connect-4
 
+## Deployed with Netlify : [https://connect-4-bob.netlify.app/](https://connect-4-bob.netlify.app/) 
+
 Current State:
 
 ![Dev Server Screenshot](images/State1.png "Current Screenshot in Bob's system")
