@@ -101,29 +101,26 @@ const Board = (props) => {
             <Item>{renderDiskHolderRow(3)}</Item>
             <Item>{renderDiskHolderRow(4)}</Item>
             <Item>{renderDiskHolderRow(5)}</Item>
-            <Item>
-                <Modal
-                    open={openInvalidClickModal}
-                    onClose={handleCloseInvalidClickModal}
-                    aria-labelledby='modal-modal-title'
-                    aria-describedby='modal-modal-description'
-                >
-                    <Box sx={BasicModalStyle}>
-                        <Typography
-                            id='modal-modal-title'
-                            variant='h6'
-                            component='h2'
-                        >
-                            Message from Connect-4
-                        </Typography>
-                        <Typography id='modal-modal-description' sx={{ mt: 2 }}>
-                            Please Select 'Start Game' first and then click
-                            there. Select anywhere outside this box to close
-                            this message.
-                        </Typography>
-                    </Box>
-                </Modal>
-            </Item>
+            <Modal
+                open={openInvalidClickModal}
+                onClose={handleCloseInvalidClickModal}
+                aria-labelledby='modal-modal-title'
+                aria-describedby='modal-modal-description'
+            >
+                <Box sx={BasicModalStyle}>
+                    <Typography
+                        id='modal-modal-title'
+                        variant='h6'
+                        component='h2'
+                    >
+                        Message from Connect-4
+                    </Typography>
+                    <Typography id='modal-modal-description' sx={{ mt: 2 }}>
+                        Please Select 'Start Game' first and then click there.
+                        Select anywhere outside this box to close this message.
+                    </Typography>
+                </Box>
+            </Modal>
         </Grid>
     );
 };

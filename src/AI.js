@@ -82,27 +82,28 @@ const rewardScheme = (board, AI_PIECE, PLAYER_PIECE) => {
         const countEmpty = freq[0] ? freq[0] : 0;
         // console.log(countAI, countPlayer, countEmpty);
         if (countAI === 4) {
-            score += 100;
+            score += 40000;
         }
         if (countAI === 3 && countEmpty === 1) {
-            score += 5;
+            score += 30000;
         }
         if (countAI === 2 && countEmpty === 2) {
-            score += 2;
+            score += 20000;
         }
         if (countAI === 3 && countPlayer === 1) {
-            score -= 5;
+            score -= 5000;
         }
         if (countPlayer === 3 && countEmpty === 1) {
-            score -= 4;
+            score -= 30000;
         }
-
         if (countPlayer === 2 && countEmpty === 2) {
-            score -= 20;
+            score -= 20000;
         }
 
+        // Special Case: AI is trying to block the player
+        // hence give AI a good reward
         if (countPlayer === 3 && countAI === 1) {
-            score += 10000;
+            score += 30000;
         }
 
         return score;

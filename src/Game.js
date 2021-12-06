@@ -264,8 +264,10 @@ const Game = () => {
                         maxWidth: 1000,
                         pl: 1,
                         pr: 1,
+                        pt: 0,
+                        pd: 0,
                         mt: 3,
-                        ml: 4,
+                        md: 2,
                         borderRadius: 3,
                     }}
                 >
