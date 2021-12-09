@@ -1,10 +1,10 @@
 # Connect-4
 
-## Deployed with Netlify : [https://connect-4-bob.netlify.app/](https://connect-4-bob.netlify.app/) 
+## Deployed with Netlify : [https://connect-4-bob.netlify.app/](https://connect-4-bob.netlify.app/)
 
 Current State:
 
-![Dev Server Screenshot](images/State1.png "Current Screenshot in Bob's system")
+![Dev Server Screenshot](images/State2.png "Current Screenshot in Bob's system")
 
 # Getting Started with Create React App
 
