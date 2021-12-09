@@ -11,11 +11,8 @@ https://medium.com/analytics-vidhya/artificial-intelligence-at-play-connect-four
 
 import checkGameStatus from "./GameStatus.js";
 
-const AI_WIN_REWARD = 1000000;
-const PLAYER_WIN_PUNISHMENT = -1000000;
-
-// difficulty can be tuned using this.
-const MAX_DEPTH = 5;
+const AI_WIN_REWARD = 10000;
+const PLAYER_WIN_PUNISHMENT = -10000;
 
 const numRows = 6;
 const numCols = 7;
@@ -82,28 +79,28 @@ const rewardScheme = (board, AI_PIECE, PLAYER_PIECE) => {
         const countEmpty = freq[0] ? freq[0] : 0;
         // console.log(countAI, countPlayer, countEmpty);
         if (countAI === 4) {
-            score += 40000;
+            score += 400;
         }
         if (countAI === 3 && countEmpty === 1) {
-            score += 30000;
+            score += 300;
         }
         if (countAI === 2 && countEmpty === 2) {
-            score += 20000;
+            score += 200;
         }
         if (countAI === 3 && countPlayer === 1) {
-            score -= 5000;
+            score -= 50;
         }
         if (countPlayer === 3 && countEmpty === 1) {
-            score -= 30000;
+            score -= 300;
         }
         if (countPlayer === 2 && countEmpty === 2) {
-            score -= 20000;
+            score -= 200;
         }
 
         // Special Case: AI is trying to block the player
         // hence give AI a good reward
         if (countPlayer === 3 && countAI === 1) {
-            score += 30000;
+            score += 300;
         }
 
         return score;
@@ -171,8 +168,11 @@ const miniMax = (
     beta,
     isMaximizingPlayer,
     AI_PIECE,
-    PLAYER_PIECE
+    PLAYER_PIECE,
+    MAX_DEPTH
 ) => {
+    // difficulty can be tuned using max_depth.
+
     if (isThisTheEndGame(board)) {
         const gameStatus = checkGameStatus(board, numRows, numCols);
         if (gameStatus === AI_PIECE) {
@@ -185,13 +185,17 @@ const miniMax = (
         }
     }
 
+    const unfilledColumns = getUnfilledColumns(board);
+
     if (depth >= MAX_DEPTH) {
-        const result = [rewardScheme(board, AI_PIECE, PLAYER_PIECE), -1];
+        const randomIndex = Math.floor(Math.random() * unfilledColumns.length);
+        const result = [
+            rewardScheme(board, AI_PIECE, PLAYER_PIECE),
+            unfilledColumns[randomIndex],
+        ];
         // console.log(result);
         return result;
     }
-
-    const unfilledColumns = getUnfilledColumns(board);
 
     if (isMaximizingPlayer) {
         let bestScore = Number.NEGATIVE_INFINITY;
@@ -207,7 +211,8 @@ const miniMax = (
                 beta,
                 false,
                 AI_PIECE,
-                PLAYER_PIECE
+                PLAYER_PIECE,
+                MAX_DEPTH
             );
             if (currentScore > bestScore) {
                 // console.log("yes");
@@ -238,7 +243,8 @@ const miniMax = (
                 beta,
                 true,
                 AI_PIECE,
-                PLAYER_PIECE
+                PLAYER_PIECE,
+                MAX_DEPTH
             );
 
             if (currentScore < bestScore) {

@@ -1,20 +1,13 @@
 import miniMax from "../AI.js";
 
 // A Small Test To check if AI is winning or not.
+
+const MAX_DEPTH = 5;
+
 let board = [
     // Test
     [0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 2, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0],
-    [0, 0, 0, 1, 1, 2, 0],
-];
-
-let win = [
-    // Test
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 2, 0, 0],
     [0, 0, 0, 0, 2, 0, 0],
     [0, 0, 0, 1, 2, 0, 0],
     [0, 0, 0, 1, 2, 0, 0],
@@ -29,7 +22,8 @@ console.log(
         Number.POSITIVE_INFINITY,
         true,
         2,
-        1
+        1,
+        MAX_DEPTH
     )
 );
 
@@ -41,7 +35,8 @@ console.log(
         Number.POSITIVE_INFINITY,
         true,
         1,
-        2
+        2,
+        MAX_DEPTH
     )
 );
 
@@ -62,6 +57,7 @@ console.log(
         Number.POSITIVE_INFINITY,
         true,
         2,
-        1
+        1,
+        MAX_DEPTH
     )
 );

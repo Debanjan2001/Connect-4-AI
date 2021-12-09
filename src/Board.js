@@ -116,8 +116,8 @@ const Board = (props) => {
                         Message from Connect-4
                     </Typography>
                     <Typography id='modal-modal-description' sx={{ mt: 2 }}>
-                        Please Select 'Start Game' first and then click there.
-                        Select anywhere outside this box to close this message.
+                        Please 'Start Game' first and then click there. Select
+                        anywhere outside this box to close this message.
                     </Typography>
                 </Box>
             </Modal>

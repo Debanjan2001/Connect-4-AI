@@ -11,6 +11,12 @@ import getWinningPositions from "./WinningPositions";
 
 import miniMax from "./AI";
 
+const difficultyToMaxDepth = {
+    1: 0,
+    2: 1,
+    3: 5,
+};
+
 const Game = () => {
     const numRows = 6;
     const numCols = 7;
@@ -31,9 +37,17 @@ const Game = () => {
     const [winningPosition, setWinningPosition] = useState(null);
     const [aiValue, setAIValue] = useState(0);
     const [openInvalidClickModal, setOpenInvalidClickModal] = useState(false);
-    const [openStartGameModal, setOpenStartGameModal] = useState(false);
+    const [openConfirmGameModal, setOpenConfirmGameModal] = useState(false);
     const [lastPlayer, setLastPlayer] = useState(0);
-    const [gameMode, setGameMode] = useState(0);
+
+    // false if multiplayer, true if cpu
+    const [gameModeCPU, setGameModeCPU] = useState(true);
+    //default is medium
+    const [difficulty, setDifficulty] = useState(2);
+
+    const handleDifficultyChange = (val) => {
+        setDifficulty(val);
+    };
 
     const dropDisk = (board, col, value) => {
         for (let i = numRows - 1; i >= 0; i--) {
@@ -64,7 +78,7 @@ const Game = () => {
             // ongoing
             displayText =
                 "Current Turn: " +
-                (gameMode === 1
+                (gameModeCPU === false
                     ? "Player " +
                       nextPlayer +
                       (nextPlayer === 1 ? "(Red)" : "(Blue)")
@@ -72,7 +86,7 @@ const Game = () => {
             setGameTextObject({
                 gameText: displayText,
                 gameTextMUIBackground:
-                    gameMode === 1
+                    gameModeCPU === false
                         ? nextPlayer === 1
                             ? "error"
                             : "info"
@@ -82,7 +96,7 @@ const Game = () => {
             });
         } else if (gameStatus === 1 || gameStatus === 2) {
             // someone has won
-            if (gameMode === 1) {
+            if (gameModeCPU === false) {
                 displayText =
                     "Player " +
                     currentPlayer +
@@ -111,14 +125,12 @@ const Game = () => {
         }
     };
 
-    const handleGameModeSelection = (choiceID) => {
-        // choiceID => will pass 1 if multiplayer, 2 if AI
-        setGameMode(choiceID);
+    const handleGameStart = () => {
         setGameStarted(true);
         setResetGame(false);
-        handleCloseStartGameModal();
+        handleCloseConfirmGameModal();
 
-        if (choiceID === 1) {
+        if (gameModeCPU === false) {
             // multiplayer
             // we already have done all that was required
             setGameTextObject({
@@ -138,7 +150,7 @@ const Game = () => {
             } else if (AI_VALUE === 1) {
                 // ai needs to play asap.
                 const currentMatrix = matrix.slice();
-                makeMoveWithAI(currentMatrix, AI_VALUE);
+                makeMoveWithAI(currentMatrix, AI_VALUE, difficulty);
                 setMatrix(currentMatrix);
                 setLastPlayer(AI_VALUE);
             }
@@ -150,12 +162,17 @@ const Game = () => {
         }
     };
 
-    const handleOpenStartGameModal = () => {
-        setOpenStartGameModal(true);
+    const handleGameModeSelection = (event) => {
+        // switch button => false if multiplayer, true if cpu
+        setGameModeCPU(event.target.checked);
     };
 
-    const handleCloseStartGameModal = () => {
-        setOpenStartGameModal(false);
+    const handleOpenConfirmGameModal = () => {
+        setOpenConfirmGameModal(true);
+    };
+
+    const handleCloseConfirmGameModal = () => {
+        setOpenConfirmGameModal(false);
     };
 
     const handleResetGame = () => {
@@ -169,6 +186,8 @@ const Game = () => {
         setMatrix(currentMatrix);
         setGameStarted(false);
         setResetGame(true);
+        // Make difficulty medium again
+        setDifficulty(2);
         setLastPlayer(0);
         setGameTextObject({
             gameText: "",
@@ -181,9 +200,10 @@ const Game = () => {
         setOpenInvalidClickModal(false);
     };
 
-    const makeMoveWithAI = (board, AI_VALUE) => {
+    const makeMoveWithAI = (board, AI_VALUE, difficulty) => {
         // make the best possible move on the board;
         // arrays are passed by reference, so we dont need to return the new board state as well.
+        const maxDepth = difficultyToMaxDepth[difficulty];
         const [depth, alpha, beta, isMaximizingPlayer] = [
             0,
             Number.NEGATIVE_INFINITY,
@@ -197,10 +217,13 @@ const Game = () => {
             beta,
             isMaximizingPlayer,
             AI_VALUE,
-            getNextPlayer(AI_VALUE)
+            getNextPlayer(AI_VALUE),
+            maxDepth
         );
 
-        dropDisk(board, bestColumn, AI_VALUE);
+        if (bestColumn >= 0) {
+            dropDisk(board, bestColumn, AI_VALUE);
+        }
     };
 
     const handleBoardClick = (row, col) => {
@@ -223,14 +246,14 @@ const Game = () => {
 
         const currPlayer = getNextPlayer(lastPlayer);
 
-        if (gameMode === 1) {
+        if (gameModeCPU === false) {
             // multiplayer and someone clicked
             const success = dropDisk(currentMatrix, col, currPlayer);
             if (!success) {
                 return;
             }
             setLastPlayer(currPlayer);
-        } else if (gameMode === 2) {
+        } else if (gameModeCPU === true) {
             // AI battle and someone clicked
             // so you drop and then force the AI to play.
             const success = dropDisk(currentMatrix, col, currPlayer);
@@ -240,7 +263,7 @@ const Game = () => {
             setMatrix(currentMatrix);
             const nextPlayer = getNextPlayer(currPlayer);
             // its time for AI;
-            makeMoveWithAI(currentMatrix, nextPlayer);
+            makeMoveWithAI(currentMatrix, nextPlayer, difficulty);
             setLastPlayer(nextPlayer);
         }
 
@@ -292,17 +315,19 @@ const Game = () => {
                     gameTextObject={gameTextObject}
                     gameStarted={gameStarted}
                     gameReset={resetGame}
+                    handleDifficultyChange={handleDifficultyChange}
+                    handleGameModeSelection={handleGameModeSelection}
+                    openConfirmGameModal={openConfirmGameModal}
+                    handleCloseConfirmGameModal={handleCloseConfirmGameModal}
                     onStartGame={() => {
-                        handleOpenStartGameModal();
+                        handleOpenConfirmGameModal();
                     }}
                     onResetGame={() => {
                         handleResetGame();
                     }}
-                    openStartGameModal={openStartGameModal}
-                    handleCloseStartGameModal={handleCloseStartGameModal}
-                    handleGameModeSelection={(choiceID) => {
-                        handleGameModeSelection(choiceID);
-                    }}
+                    handleGameStart={handleGameStart}
+                    gameModeCPU={gameModeCPU}
+                    difficulty={difficulty}
                 />
             </Grid>
         </Grid>
