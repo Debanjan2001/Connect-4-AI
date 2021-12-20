@@ -283,7 +283,9 @@ const Game = () => {
         >
             <Grid item>
                 <Card
+                    variant="outlined"
                     sx={{
+                        border : 3,
                         maxWidth: 1000,
                         pl: 1,
                         pr: 1,

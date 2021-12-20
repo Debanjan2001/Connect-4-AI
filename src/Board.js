@@ -1,7 +1,6 @@
 import React from "react";
-import { Button, Grid, Modal, Stack, Typography } from "@mui/material";
+import { Button, Grid, Modal, Typography } from "@mui/material";
 
-import Item from "@mui/material/List";
 import { Box } from "@mui/system";
 
 import BasicModalStyle from "./style/BasicModalStyle";
@@ -19,14 +18,15 @@ const DiskHolder = (props) => {
                     winningPosition.findIndex(
                         (x) => x[0] === row && x[1] === col
                     ) >= 0
-                        ? 1
+                        ? 2
                         : 0,
+                margin:0.5,
             }}
-        >
+        >   
             <Button
                 variant={props.diskHolderProperties.variant}
                 color={props.diskHolderProperties.color}
-                sx={{ height: 63, width: 60, borderRadius: 100 }}
+                sx={{ height: 70, width: 70, borderRadius: 100, border:2 }}
                 onClick={() => props.onClick()}
             >
                 {/* {props.value} */}
@@ -81,26 +81,26 @@ const Board = (props) => {
     // Takes a row index and renders the disks in that row
     const renderDiskHolderRow = (row) => {
         return (
-            <Stack direction='row' spacing={1}>
-                <Item>{renderDiskHolder(row, 0)}</Item>
-                <Item>{renderDiskHolder(row, 1)}</Item>
-                <Item>{renderDiskHolder(row, 2)}</Item>
-                <Item>{renderDiskHolder(row, 3)}</Item>
-                <Item>{renderDiskHolder(row, 4)}</Item>
-                <Item>{renderDiskHolder(row, 5)}</Item>
-                <Item>{renderDiskHolder(row, 6)}</Item>
-            </Stack>
+            <Grid container direction='row' spacing={1}>
+                <Grid item>{renderDiskHolder(row, 0)}</Grid>
+                <Grid item>{renderDiskHolder(row, 1)}</Grid>
+                <Grid item>{renderDiskHolder(row, 2)}</Grid>
+                <Grid item>{renderDiskHolder(row, 3)}</Grid>
+                <Grid item>{renderDiskHolder(row, 4)}</Grid>
+                <Grid item>{renderDiskHolder(row, 5)}</Grid>
+                <Grid item>{renderDiskHolder(row, 6)}</Grid>
+            </Grid>
         );
     };
 
     return (
         <Grid>
-            <Item>{renderDiskHolderRow(0)}</Item>
-            <Item>{renderDiskHolderRow(1)}</Item>
-            <Item>{renderDiskHolderRow(2)}</Item>
-            <Item>{renderDiskHolderRow(3)}</Item>
-            <Item>{renderDiskHolderRow(4)}</Item>
-            <Item>{renderDiskHolderRow(5)}</Item>
+            <Grid item>{renderDiskHolderRow(0)}</Grid>
+            <Grid item>{renderDiskHolderRow(1)}</Grid>
+            <Grid item>{renderDiskHolderRow(2)}</Grid>
+            <Grid item>{renderDiskHolderRow(3)}</Grid>
+            <Grid item>{renderDiskHolderRow(4)}</Grid>
+            <Grid item>{renderDiskHolderRow(5)}</Grid>
             <Modal
                 open={openInvalidClickModal}
                 onClose={handleCloseInvalidClickModal}
