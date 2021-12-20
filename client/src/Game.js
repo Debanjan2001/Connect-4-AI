@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 // Game Board
 import Board from "./Board";
@@ -11,11 +11,16 @@ import getWinningPositions from "./WinningPositions";
 
 import miniMax from "./AI";
 
+import io from "socket.io-client";
+
+
 const difficultyToMaxDepth = {
     1: 0,
     2: 1,
     3: 5,
 };
+
+const socket = io.connect("/");
 
 const Game = () => {
     const numRows = 6;
@@ -42,8 +47,33 @@ const Game = () => {
 
     // false if multiplayer, true if cpu
     const [gameModeCPU, setGameModeCPU] = useState(true);
-    //default is medium
+
+    //default difficulty is medium(2)
     const [difficulty, setDifficulty] = useState(2);
+
+    // using websockets ? or not
+    const [isLocalGame, setIsLocalGame] = useState(false);
+
+    const [roomId, setRoomId] = useState("");
+
+    useEffect(()=>{
+        socket.on("all-info",(data)=>{
+            console.log(data);
+        });
+    },[])
+
+    const handleChangeRoomId = (newRoomId) => {
+        setInputFieldError(false);
+        setRoomId(newRoomId);
+    }
+
+    const [playerName, setPlayerName] = useState("");
+    const [inputFieldError, setInputFieldError] = useState(false);
+
+    const handleChangePlayerName = (name) => {
+        setInputFieldError(false);
+        setPlayerName(name);
+    }
 
     const handleDifficultyChange = (val) => {
         setDifficulty(val);
@@ -80,8 +110,8 @@ const Game = () => {
                 "Current Turn: " +
                 (gameModeCPU === false
                     ? "Player " +
-                      nextPlayer +
-                      (nextPlayer === 1 ? "(Red)" : "(Blue)")
+                    nextPlayer +
+                    (nextPlayer === 1 ? "(Red)" : "(Blue)")
                     : "Player");
             setGameTextObject({
                 gameText: displayText,
@@ -91,8 +121,8 @@ const Game = () => {
                             ? "error"
                             : "info"
                         : aiValue === 1
-                        ? "info"
-                        : "error",
+                            ? "info"
+                            : "error",
             });
         } else if (gameStatus === 1 || gameStatus === 2) {
             // someone has won
@@ -126,6 +156,16 @@ const Game = () => {
     };
 
     const handleGameStart = () => {
+
+        if(gameModeCPU === false && isLocalGame === false){
+            if(!roomId || !playerName){
+                setInputFieldError(true);
+                return;
+            }
+            socket.emit("join-room", roomId);
+            socket.emit("num-rooms", roomId);
+        }
+
         setGameStarted(true);
         setResetGame(false);
         handleCloseConfirmGameModal();
@@ -165,6 +205,11 @@ const Game = () => {
     const handleGameModeSelection = (event) => {
         // switch button => false if multiplayer, true if cpu
         setGameModeCPU(event.target.checked);
+    };
+
+    const handleMultiplayerGameModeSelection = (event) => {
+        // switch button => false if local, true if over websocket
+        setIsLocalGame(event.target.checked);
     };
 
     const handleOpenConfirmGameModal = () => {
@@ -285,7 +330,7 @@ const Game = () => {
                 <Card
                     variant="outlined"
                     sx={{
-                        border : 3,
+                        border: 3,
                         maxWidth: 1000,
                         pl: 1,
                         pr: 1,
@@ -330,6 +375,13 @@ const Game = () => {
                     handleGameStart={handleGameStart}
                     gameModeCPU={gameModeCPU}
                     difficulty={difficulty}
+                    isLocalGame={isLocalGame}
+                    handleMultiplayerGameModeSelection={handleMultiplayerGameModeSelection}
+                    playerName={playerName}
+                    handleChangePlayerName={handleChangePlayerName}
+                    roomId={roomId}
+                    handleChangeRoomId={handleChangeRoomId}
+                    inputFieldError={inputFieldError}
                 />
             </Grid>
         </Grid>

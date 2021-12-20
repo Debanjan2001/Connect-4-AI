@@ -18,15 +18,15 @@ const DiskHolder = (props) => {
                     winningPosition.findIndex(
                         (x) => x[0] === row && x[1] === col
                     ) >= 0
-                        ? 2
+                        ? 1
                         : 0,
-                margin:0.5,
+                margin:1,
             }}
         >   
             <Button
                 variant={props.diskHolderProperties.variant}
                 color={props.diskHolderProperties.color}
-                sx={{ height: 70, width: 70, borderRadius: 100, border:2 }}
+                sx={{ height: 70, width: 70, borderRadius: 100, border:2}}
                 onClick={() => props.onClick()}
             >
                 {/* {props.value} */}
@@ -81,7 +81,7 @@ const Board = (props) => {
     // Takes a row index and renders the disks in that row
     const renderDiskHolderRow = (row) => {
         return (
-            <Grid container direction='row' spacing={1}>
+            <Grid container direction='row'>
                 <Grid item>{renderDiskHolder(row, 0)}</Grid>
                 <Grid item>{renderDiskHolder(row, 1)}</Grid>
                 <Grid item>{renderDiskHolder(row, 2)}</Grid>

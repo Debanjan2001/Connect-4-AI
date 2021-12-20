@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Alert, Link, Modal, Stack, Switch } from "@mui/material";
+import { Alert, Link, Modal, Stack, Switch, TextField } from "@mui/material";
 import Item from "@mui/material/List";
 import Fab from "@mui/material/Fab";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
@@ -14,6 +14,7 @@ import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import CheckIcon from "@mui/icons-material/Check";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import connect4Image from "./static/images/connect-4.png";
+import AddIcon from '@mui/icons-material/Add';
 
 import BasicModalStyle from "./style/BasicModalStyle";
 import { Box } from "@mui/system";
@@ -37,9 +38,21 @@ const Actions = (props) => {
     const gameModeCPU = props.gameModeCPU;
     const handleGameStart = props.handleGameStart;
     const difficulty = props.difficulty;
+    const isLocalGame = props.isLocalGame;
+    const handleMultiplayerGameModeSelection = props.handleMultiplayerGameModeSelection;
+    
+    const playerName = props.playerName;
+    const handleChangePlayerName = props.handleChangePlayerName;
+    const roomId = props.roomId;
+    const handleChangeRoomId = props.handleChangeRoomId;
+    const inputFieldError = props.inputFieldError;
+
+    const getRandomRoom = () => {
+        return Math.random().toString(36).substring(2,11);
+    }
 
     return (
-        <Card sx={{ maxWidth: 450, mt: 3 }}>
+        <Card sx={{ maxWidth: 450, mt: 3,  border:3,borderColor:'#808080' }}>
             <CardActionArea>
                 <CardMedia
                     component='img'
@@ -83,7 +96,7 @@ const Actions = (props) => {
                                     <Typography>CPU</Typography>
                                 </Item>
                             </Stack>
-                            {gameModeCPU && (
+                            {gameModeCPU ? (
                                 <Stack direction='row' spacing={5}>
                                     <Item>
                                         <Typography>
@@ -95,6 +108,25 @@ const Actions = (props) => {
                                             handleDifficultyChange
                                         }
                                     />
+                                </Stack>
+                            ): (
+                                <Stack direction='row' spacing={2}>
+                                    <Item>
+                                        <Typography>Choose sub-mode : </Typography>
+                                    </Item>
+                                    <Item>
+                                        <Typography>Play Online</Typography>
+                                    </Item>
+                                    
+                                    <Switch
+                                        checked={isLocalGame}
+                                        onChange={handleMultiplayerGameModeSelection}
+                                        inputProps={{ "aria-label": "controlled" }}
+                                    />
+
+                                    <Item>
+                                        <Typography>Play Locally</Typography>
+                                    </Item> 
                                 </Stack>
                             )}
                         </Stack>
@@ -114,6 +146,7 @@ const Actions = (props) => {
                         </Item>
                     )}
                     <Stack direction='row' spacing={2}>
+                        
                         <Item>
                             {!gameStarted || gameReset ? (
                                 <Fab
@@ -173,24 +206,75 @@ const Actions = (props) => {
                                 id='modal-modal-description'
                                 sx={{ mt: 2 }}
                             >
+                                
                                 <Stack>
-                                    <Item>
-                                        •{" "}
-                                        {gameModeCPU
-                                            ? "You have selected CPU-" +
-                                              difficultyToText[difficulty] +
-                                              " Mode"
-                                            : "You have selected Multiplayer Mode"}
-                                    </Item>
                                     {gameModeCPU && (
+                                        <>
+                                        <Item>
+                                            • You have selected CPU-{difficultyToText[difficulty]} Mode
+                                        </Item>
                                         <Item>
                                             • CPU can be Player 1 or 2 (Random)
                                         </Item>
+                                        </>
                                     )}
-                                    {!gameModeCPU && (
+                                    { (!gameModeCPU && isLocalGame) && (
+                                        <>
+                                        <Item>
+                                        • You have selected Local Multiplayer Mode
+                                        </Item>
                                         <Item>
                                             • Player 1 is Red & Player 2 is Blue
                                         </Item>
+                                        </>
+                                    )}
+                                    { (!gameModeCPU && !isLocalGame) && (
+                                        <>
+                                        <Item>
+                                            • Create a room or enter a room-id.
+                                        </Item>
+                                        <Item>
+                                            • Share the Id with your friend.
+                                        </Item>
+                                        <Item>
+                                            <TextField 
+                                                required 
+                                                fullWidth 
+                                                label="Enter your Name"
+                                                error={(!playerName && inputFieldError)} 
+                                                id="username" 
+                                                value={playerName}
+                                                onChange={(event)=>{
+                                                    const name = event.target.value;
+                                                    handleChangePlayerName(name);
+                                                }}
+                                            />
+                                        </Item>
+                                        <Item>
+                                            <TextField 
+                                                label="Enter a Room-ID to join a game" 
+                                                id="roomId" 
+                                                error={(!roomId && inputFieldError)} 
+                                                fullWidth 
+                                                value={roomId}
+                                                onChange={(event)=>{
+                                                    handleChangeRoomId(event.target.value);
+                                                }}
+                                            />
+                                        </Item>
+                                        <Stack direction="row" spacing={1}>
+                                            <Item>
+                                                <Fab variant="extended" color="primary" aria-label="add"
+                                                    onClick = {()=>{
+                                                        const randomRoom = getRandomRoom();
+                                                        handleChangeRoomId(randomRoom);
+                                                    }}
+                                                >
+                                                    <AddIcon sx={{ mr: 1 }} /> Create a new Game Room
+                                                </Fab>
+                                            </Item>
+                                        </Stack>
+                                        </>
                                     )}
                                 </Stack>
                             </Typography>
@@ -199,19 +283,20 @@ const Actions = (props) => {
                                 <Item>
                                     <Fab
                                         variant='extended'
+                                        color="primary"
                                         onClick={() => {
-                                            // pass 1 to denote as multiplayer battle
                                             handleGameStart();
                                         }}
                                     >
                                         <CheckIcon sx={{ mr: 1 }} />
-                                        Confirm
+                                        Start
                                     </Fab>
                                 </Item>
 
                                 <Item>
                                     <Fab
                                         variant='extended'
+                                        color="secondary"
                                         onClick={() => {
                                             handleCloseConfirmGameModal();
                                         }}
