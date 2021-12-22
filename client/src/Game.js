@@ -229,6 +229,8 @@ const Game = () => {
             gameText: "",
             gameTextMUIBackground: "",
         }); 
+        // Make difficulty medium again
+        setDifficulty(2);
         setResetGame(true);
         setGameStarted(false);
         socket.emit("leave-room",roomId);
@@ -322,6 +324,8 @@ const Game = () => {
         setMatrix(currentMatrix);
         setWinningPosition(null);
         setLastPlayer(0);
+        // Make difficulty medium again
+        setDifficulty(2);
 
         if(!gameModeCPU && !isLocalGame){
             setGameTextObject({
