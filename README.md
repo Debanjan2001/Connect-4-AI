@@ -1,10 +1,61 @@
-# Connect-4
+# Connect-4-AI
 
-## Deployed with Netlify : [https://connect-4-bob.netlify.app/](https://connect-4-bob.netlify.app/)
+- A Game that you can play online, locally with a friend or against the Computer with 3 different difficulty levels. 
+- Made with 💖 by Debanjan Saha
 
-Current State:
+<hr>
 
-![Dev Server Screenshot](images/State2.png "Current Screenshot in Bob's system")
+## Deployed with Heroku : [https://connect-4-bob.herokuapp.com/](https://connect-4-bob.herokuapp.com/)
+
+![Screenshot1](images/State3.png "Current Screenshot From Heroku Deploy")
+
+![Screenshot2](images/State4.png "Current Screenshot From Heroku Deploy")
+
+<hr>
+
+## Previously Deployed Static Features with Netlify : [https://connect-4-bob.netlify.app/](https://connect-4-bob.netlify.app/)
+
+<hr>
+
+## Instructions to run locally (Written for Linux)
+
+- Make sure you have node >= 14 and npm installed.
+- Clone this Repository.
+- Open the download location in a terminal.
+- Run the following commands from either one of the methods.
+
+### Method 1 (Directly served from the Build) :
+
+- Make sure port <b>3001</b> is free before you run this
+
+```
+cd Connect-4-AI
+npm install
+npm install --prefix client && npm run build --prefix client
+npm start
+```
+- Visit http://localhost:3001 and enjoy your day.
+
+### Method 2 (Run in development mode) : 
+```
+cd Connect-4-AI
+npm install
+npm install --prefix client && npm run build --prefix client
+touch .env
+```
+- Now paste the following in .env file
+```
+PORT=3001
+DEVELOPMENT="true"
+``` 
+- Finally start the development server
+- Make sure ports <b>3000  and 3001</b> are free before you run this :
+```
+npm run dev
+```
+- Visit http://localhost:3000 and enjoy your day.
+
+<hr>
 
 # Getting Started with Create React App
 
