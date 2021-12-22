@@ -1,30 +1,37 @@
 const express = require("express");
 const app = express();
 const http = require('http');
-const cors = require('cors');
-app.use(cors());
-
+const path = require("path");
 const env = require('dotenv');
 env.config();
 
 const PORT = process.env.PORT || 3001;
 
-const socket = require("socket.io");
-
 const server = app.listen(PORT, () => {
     console.log(`Server listening on ${PORT}`);
 });
 
-const io = socket(server, {
+if(process.env.DEVELOPMENT === true){
+    const cors = require('cors');
+    app.use(cors());
+    app.get("/", (req, res) => {
+    res.json({ message: "Hello from Dev server" });
+    });
+} else {
+    app.use(express.static(path.join(__dirname, 'client/build')))
+    app.get('/', (req, res, next) => res.sendFile(__dirname + 'client/build/index.html'));
+}
+
+
+const socketIO = require("socket.io");
+
+const io = socketIO(server, {
     cors: {
       origin: "*",
       methods: ["GET", "POST"]
     }
 });
 
-app.get("/api", (req, res) => {
-    res.json({ message: "Hello from server" });
-});
   
 io.on("connection", (socket) => {
     // console.log(`Player : ${socket.id} is online`);
@@ -41,7 +48,7 @@ io.on("connection", (socket) => {
         }else{
             io.in(roomId).emit("finish-waiting","Please start the game");
         }
-        console.log(`Player : ${socket.id} has joined room ${roomId}`);
+        // console.log(`Player : ${socket.id} has joined room ${roomId}`);
     });
 
     socket.on("leave-room", (roomId)=>{

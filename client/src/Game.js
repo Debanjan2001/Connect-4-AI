@@ -20,7 +20,7 @@ const difficultyToMaxDepth = {
     3: 5,
 };
 
-const socket = io.connect("/");
+const socket = io.connect();
 
 const Game = () => {
     const numRows = 6;
