@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import Game from "./Game";
+import App from "./App";
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
-import { red, blue } from "@mui/material/colors";
+import { red } from "@mui/material/colors";
 
 const darkTheme = createTheme({
     palette: {
@@ -14,7 +14,7 @@ const darkTheme = createTheme({
             main: red[600],
         },
         userBlue: {
-            main: blue[800],
+            main: '#3029ef',
         },
         userWhite: {
             main: "#FFFFFF",
@@ -25,7 +25,7 @@ const darkTheme = createTheme({
 ReactDOM.render(
     <ThemeProvider theme={darkTheme}>
         <CssBaseline />
-        <Game />
+        <App />
     </ThemeProvider>,
 
     document.getElementById("root")
