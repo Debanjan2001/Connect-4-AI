@@ -15,6 +15,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import connect4Image from "./static/images/connect-4.png";
 import AddIcon from '@mui/icons-material/Add';
+import ExitToAppTwoToneIcon from '@mui/icons-material/ExitToAppTwoTone';
 
 import BasicModalStyle from "./style/BasicModalStyle";
 import { Box } from "@mui/system";
@@ -41,18 +42,20 @@ const Actions = (props) => {
     const isLocalGame = props.isLocalGame;
     const handleMultiplayerGameModeSelection = props.handleMultiplayerGameModeSelection;
     
-    const playerName = props.playerName;
-    const handleChangePlayerName = props.handleChangePlayerName;
     const roomId = props.roomId;
     const handleChangeRoomId = props.handleChangeRoomId;
     const inputFieldError = props.inputFieldError;
+    const isRoomFull = props.isRoomFull;
+    const isWaiting = props.isWaiting;
+    const handleLeaveRoom = props.handleLeaveRoom;
+
 
     const getRandomRoom = () => {
         return Math.random().toString(36).substring(2,11);
     }
 
     return (
-        <Card sx={{ maxWidth: 450, mt: 3,  border:3,borderColor:'#808080' }}>
+        <Card sx={{ maxWidth: 475, mt:3,  border:3,borderColor:'#808080' }}>
             <CardActionArea>
                 <CardMedia
                     component='img'
@@ -133,17 +136,46 @@ const Actions = (props) => {
                     )}
 
                     {gameStarted && (
-                        <Item>
+                        <>
+                        {(!gameModeCPU && !isLocalGame) && (
+                            <Item>
                             <Alert
                                 sx={{ borderRadius: 100 }}
                                 variant='filled'
-                                severity={gameTextMUIBackground}
+                                severity="success"
                             >
                                 <Typography sx={{ fontWeight: "bold" }}>
-                                    {gameText}
+                                    You are connected to Room : {roomId}
                                 </Typography>
                             </Alert>
                         </Item>
+                        )}
+                        
+                        <Item>
+                            { (!gameModeCPU && !isLocalGame && isWaiting) ? (
+                                <Alert
+                                 sx={{ borderRadius: 100 }}
+                                 variant='filled'
+                                 severity="warning"
+                                >
+                                     <Typography sx={{ fontWeight: "bold" }}>
+                                         Waiting for Opponent
+                                     </Typography>
+                                </Alert>
+                            ) : (
+                                <Alert
+                                sx={{ borderRadius: 100 }}
+                                variant='filled'
+                                severity={gameTextMUIBackground}
+                                >
+                                    <Typography sx={{ fontWeight: "bold" }}>
+                                        {gameText}
+                                    </Typography>
+                                </Alert>
+                            )}
+                           
+                        </Item>
+                        </>
                     )}
                     <Stack direction='row' spacing={2}>
                         
@@ -186,6 +218,19 @@ const Actions = (props) => {
                             </Link>
                         </Item>
                     </Stack>
+                    { (gameStarted && !gameModeCPU && !isLocalGame) && (
+                        <Item>
+                            <Fab 
+                                color='primary' 
+                                variant='extended'
+                                onClick={()=>{handleLeaveRoom()}}
+                            >
+                                <ExitToAppTwoToneIcon sx={{ mr: 1 }} />
+                                    Leave Room
+                            </Fab>
+                        </Item>
+                    )}
+                   
                     <Modal
                         open={openConfirmGameModal}
                         onClose={handleCloseConfirmGameModal}
@@ -238,27 +283,17 @@ const Actions = (props) => {
                                         </Item>
                                         <Item>
                                             <TextField 
-                                                required 
-                                                fullWidth 
-                                                label="Enter your Name"
-                                                error={(!playerName && inputFieldError)} 
-                                                id="username" 
-                                                value={playerName}
-                                                onChange={(event)=>{
-                                                    const name = event.target.value;
-                                                    handleChangePlayerName(name);
-                                                }}
-                                            />
-                                        </Item>
-                                        <Item>
-                                            <TextField 
-                                                label="Enter a Room-ID to join a game" 
+                                                label={(isRoomFull) ? (
+                                                        "This Room is full"
+                                                    ) : (
+                                                        "Enter a Room-ID to join a game"
+                                                )}
                                                 id="roomId" 
-                                                error={(!roomId && inputFieldError)} 
+                                                error={((!roomId && inputFieldError) || isRoomFull )} 
                                                 fullWidth 
                                                 value={roomId}
                                                 onChange={(event)=>{
-                                                    handleChangeRoomId(event.target.value);
+                                                    handleChangeRoomId(event.target.value.trim());
                                                 }}
                                             />
                                         </Item>

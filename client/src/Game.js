@@ -46,7 +46,7 @@ const Game = () => {
     const [lastPlayer, setLastPlayer] = useState(0);
 
     // false if multiplayer, true if cpu
-    const [gameModeCPU, setGameModeCPU] = useState(true);
+    const [gameModeCPU, setGameModeCPU] = useState(false);
 
     //default difficulty is medium(2)
     const [difficulty, setDifficulty] = useState(2);
@@ -55,25 +55,84 @@ const Game = () => {
     const [isLocalGame, setIsLocalGame] = useState(false);
 
     const [roomId, setRoomId] = useState("");
+    const [isRoomFull, setIsRoomFull] = useState(false);
+    const [onlinePlayerNumber, setOnlinePlayerNumber] = useState(0);
 
-    useEffect(()=>{
-        socket.on("all-info",(data)=>{
-            console.log(data);
+    const [isWaiting, setIsWaiting] = useState(false);
+
+
+    useEffect(() => {
+
+        socket.on("room-full", (message) => {
+            // console.log(message);
+            setIsRoomFull(true);
+        })
+
+        socket.on("room-available", (message) => {
+            // console.log(message);
+            setIsRoomFull(false);
+        })
+
+        socket.on("allot-number", (num) => {
+            setOnlinePlayerNumber(num);
+        })
+
+        socket.on("start-waiting",(message) => {
+            setIsWaiting(true);
+            // console.log(message);
+        })
+
+        socket.on("finish-waiting",(message) => {
+            setIsWaiting(false);
+            // console.log(message);
+        })
+
+        socket.on("broadcast-click", (data) => {
+            const playerNum = data.playerNum;
+            const col = data.col;
+            broadcastClick(col, playerNum);
         });
-    },[])
+
+        socket.on("broadcast-reset",(message)=>{
+            // console.log(message);
+            handleResetGame();
+        })
+
+        socket.on("broadcast-leave",(message)=>{
+            // console.log(message);
+            handleResetGame();
+            // make the other client the first player (if any client available in room)
+            setOnlinePlayerNumber(1);
+            // keep the other client waiting(if any)
+            setIsWaiting(true);
+        })
+
+        // update only once after component renders
+        // passing the empty dependency list to achieve that
+        // use with caution
+    }, []);
+
+
+    const broadcastClick = (col, playerNum) => {
+        // console.log(col, playerNum);
+        const currentMatrix = matrix.slice();
+        dropDisk(currentMatrix, col, playerNum);
+        setWinningPosition(
+            getWinningPositions(currentMatrix, numRows, numCols)
+        );
+        setMatrix(currentMatrix);
+        setLastPlayer(playerNum);
+        updateDisplayGameText();
+    }
 
     const handleChangeRoomId = (newRoomId) => {
+        socket.emit("check-room-availability", newRoomId);
         setInputFieldError(false);
         setRoomId(newRoomId);
     }
 
-    const [playerName, setPlayerName] = useState("");
     const [inputFieldError, setInputFieldError] = useState(false);
 
-    const handleChangePlayerName = (name) => {
-        setInputFieldError(false);
-        setPlayerName(name);
-    }
 
     const handleDifficultyChange = (val) => {
         setDifficulty(val);
@@ -104,84 +163,115 @@ const Game = () => {
         const nextPlayer = getNextPlayer(currentPlayer);
 
         let displayText = "";
+        let backgroundVariant = "";
+
         if (gameStatus === 0) {
             // ongoing
-            displayText =
-                "Current Turn: " +
-                (gameModeCPU === false
-                    ? "Player " +
-                    nextPlayer +
-                    (nextPlayer === 1 ? "(Red)" : "(Blue)")
-                    : "Player");
-            setGameTextObject({
-                gameText: displayText,
-                gameTextMUIBackground:
-                    gameModeCPU === false
-                        ? nextPlayer === 1
-                            ? "error"
-                            : "info"
-                        : aiValue === 1
-                            ? "info"
-                            : "error",
-            });
-        } else if (gameStatus === 1 || gameStatus === 2) {
-            // someone has won
-            if (gameModeCPU === false) {
-                displayText =
-                    "Player " +
-                    currentPlayer +
-                    (currentPlayer === 1 ? "(Red)" : "(Blue)") +
-                    " Has Won !";
-                setGameTextObject({
-                    gameText: displayText,
-                    gameTextMUIBackground:
-                        currentPlayer === 1 ? "error" : "info",
-                });
-            } else {
-                displayText =
-                    (aiValue === gameStatus ? "AI" : "Player") + " Has Won !";
-                setGameTextObject({
-                    gameText: displayText,
-                    gameTextMUIBackground: gameStatus === 1 ? "error" : "info",
-                });
+            if (gameModeCPU === true) {
+                displayText = "Current Turn : Player";
+                backgroundVariant = (aiValue === 1 ? "info" : "error");
+            } else if (gameModeCPU === false && isLocalGame === true) {
+                displayText = "Current Turn : Player " + nextPlayer + (nextPlayer === 1 ? "(Red)" : "(Blue)");
+                backgroundVariant = (nextPlayer === 1 ? "error" : "info");
+            } else if (gameModeCPU === false && isLocalGame === false) {
+                // console.log(lastPlayer, currentPlayer, onlinePlayerNumber);
+                const wasPlayerLast = (currentPlayer === onlinePlayerNumber ? true : false); 
+                displayText = "Current Turn : " + (wasPlayerLast ? "Opponent" : "You");
+                backgroundVariant = "info"; 
+            }
+
+        } else if (gameStatus === 1) {
+            // player 1 has won
+            backgroundVariant = "error";
+
+            if (gameModeCPU === true) {
+                displayText = (aiValue === 1 ? "AI" : "Player") + " Has Won";
+            } else if (gameModeCPU === false && isLocalGame === true) {
+                displayText ="Player " + currentPlayer + (currentPlayer === 1 ?  "(Red)" : "(Blue)") + " Has Won !";
+            } else if (gameModeCPU === false && isLocalGame === false) {
+                displayText = (onlinePlayerNumber === 1 ? "You have won !" : "Opponent has won !");
+            }
+        } else if (gameStatus === 2) {
+            // player 2 has won
+            backgroundVariant = "info";
+
+            if (gameModeCPU === true) {
+                displayText = (aiValue === 2 ? "AI" : "Player") + " Has Won";
+            } else if (gameModeCPU === false && isLocalGame === true) {
+                displayText ="Player " + currentPlayer + (currentPlayer === 2 ?  "(Blue)" : "(Red)") + " Has Won !";
+            } else if (gameModeCPU === false && isLocalGame === false) {
+                displayText = (onlinePlayerNumber === 2 ? "You have won !" : "Opponent has won !");
             }
         } else if (gameStatus === 3) {
             // draw
-            displayText = "Game Draw !";
-            setGameTextObject({
-                gameText: displayText,
-                gameTextMUIBackground: "warning",
-            });
+            displayText = "Game Drawn !";
+            backgroundVariant = "warning";
         }
+
+        setGameTextObject({
+            gameText: displayText,
+            gameTextMUIBackground: backgroundVariant,
+        });
     };
+
+    const handleLeaveRoom = () => {
+        const currentMatrix = matrix.slice();
+        for (let i = 0; i < numRows; i++) {
+            for (let j = 0; j < numCols; j++) {
+                currentMatrix[i][j] = 0;
+            }
+        }
+
+        setMatrix(currentMatrix);
+        setWinningPosition(null);
+        setLastPlayer(0);
+        setGameTextObject({
+            gameText: "",
+            gameTextMUIBackground: "",
+        }); 
+        setResetGame(true);
+        setGameStarted(false);
+        // Make difficulty medium again
+        setDifficulty(2);
+
+        socket.emit("leave-room",roomId);
+    }
 
     const handleGameStart = () => {
 
-        if(gameModeCPU === false && isLocalGame === false){
-            if(!roomId || !playerName){
+        // Handle Case of Online Multiplayer
+        if (!gameStarted && gameModeCPU === false && isLocalGame === false) {
+            // It is a Game of websockets, not real players :-p
+            if (!roomId) {
                 setInputFieldError(true);
                 return;
             }
-            socket.emit("join-room", roomId);
-            socket.emit("num-rooms", roomId);
+            if (isRoomFull) {
+                return;
+            }
         }
 
         setGameStarted(true);
         setResetGame(false);
         handleCloseConfirmGameModal();
 
-        if (gameModeCPU === false) {
-            // multiplayer
-            // we already have done all that was required
-            setGameTextObject({
-                gameText: "Current Turn: Player 1(Red)",
-                gameTextMUIBackground: "error",
-            });
+        let newGameText = "";
+        let newGameTextMUIBackground = ""; 
+
+        if (gameModeCPU === false && isLocalGame === true) {
+            // multiplayer local
+            newGameText = "Current Turn : Player 1(Red)";
+            newGameTextMUIBackground = "error";
+        } else if (gameModeCPU === false && isLocalGame === false) {
+            // multiplayer online mode
+            socket.emit("join-room", roomId);
+            newGameText  =  "Current Turn : Whoever Clicks first :-p";
+            newGameTextMUIBackground = "info";
         } else {
             // ai will play
             // choose ai val;
             const AI_VALUE = 1 + Math.floor(Math.random() * 2);
-            const PLAYER_VALUE = AI_VALUE === 2 ? 1 : 2;
+            const PLAYER_VALUE = (AI_VALUE === 2 ? 1 : 2);
             setAIValue(AI_VALUE);
             if (PLAYER_VALUE === 1) {
                 // we dont need to do anything
@@ -195,11 +285,14 @@ const Game = () => {
                 setLastPlayer(AI_VALUE);
             }
 
-            setGameTextObject({
-                gameText: "Current Turn: Player",
-                gameTextMUIBackground: PLAYER_VALUE === 1 ? "error" : "info",
-            });
+            newGameText = "Current Turn: Player"; 
+            newGameTextMUIBackground = ( PLAYER_VALUE === 1 ? "error" : "info" );
         }
+
+        setGameTextObject({
+            gameText : newGameText,
+            gameTextMUIBackground : newGameTextMUIBackground,
+        })
     };
 
     const handleGameModeSelection = (event) => {
@@ -221,6 +314,7 @@ const Game = () => {
     };
 
     const handleResetGame = () => {
+
         const currentMatrix = matrix.slice();
         for (let i = 0; i < numRows; i++) {
             for (let j = 0; j < numCols; j++) {
@@ -229,16 +323,27 @@ const Game = () => {
         }
 
         setMatrix(currentMatrix);
-        setGameStarted(false);
-        setResetGame(true);
-        // Make difficulty medium again
-        setDifficulty(2);
-        setLastPlayer(0);
-        setGameTextObject({
-            gameText: "",
-            gameTextMUIBackground: "error",
-        }); // could be confusing to others ?? is it?
         setWinningPosition(null);
+        setLastPlayer(0);
+
+        if(!gameModeCPU && !isLocalGame){
+            setGameTextObject({
+                gameText: "Current Turn : Whoever Clicks first :-p",
+                gameTextMUIBackground: "info",
+            });
+            socket.emit("reset-game",roomId);
+        } else{
+            setGameTextObject({
+                gameText: "",
+                gameTextMUIBackground: "",
+            }); 
+            setResetGame(true);
+            setIsLocalGame(false);
+            setRoomId("");
+            setGameStarted(false);
+            // Make difficulty medium again
+            setDifficulty(2);
+        } 
     };
 
     const handleCloseInvalidClickModal = () => {
@@ -291,21 +396,47 @@ const Game = () => {
 
         const currPlayer = getNextPlayer(lastPlayer);
 
-        if (gameModeCPU === false) {
-            // multiplayer and someone clicked
+        if (gameModeCPU === false && isLocalGame === true) {
+            // multiplayer and local game
+            // console.log("Multiplayer Game Locally");
             const success = dropDisk(currentMatrix, col, currPlayer);
             if (!success) {
                 return;
             }
             setLastPlayer(currPlayer);
+        } else if (gameModeCPU === false && isLocalGame === false) {
+            // console.log("Multiplayer Online");
+            
+            if(lastPlayer === onlinePlayerNumber){
+                return;
+            }
+
+            if(isWaiting){
+                return;
+            }
+
+            const success = dropDisk(currentMatrix, col, onlinePlayerNumber);
+            if (!success) {
+                return;
+            }
+            const data = {
+                roomId: roomId,
+                row: row,
+                col: col,
+                playerNum: onlinePlayerNumber,
+            }
+            // console.log(data);
+            socket.emit("click-board", data);
+            setLastPlayer(onlinePlayerNumber);
+
         } else if (gameModeCPU === true) {
+            // console.log("AI Game");
             // AI battle and someone clicked
             // so you drop and then force the AI to play.
             const success = dropDisk(currentMatrix, col, currPlayer);
             if (!success) {
                 return;
             }
-            setMatrix(currentMatrix);
             const nextPlayer = getNextPlayer(currPlayer);
             // its time for AI;
             makeMoveWithAI(currentMatrix, nextPlayer, difficulty);
@@ -377,11 +508,12 @@ const Game = () => {
                     difficulty={difficulty}
                     isLocalGame={isLocalGame}
                     handleMultiplayerGameModeSelection={handleMultiplayerGameModeSelection}
-                    playerName={playerName}
-                    handleChangePlayerName={handleChangePlayerName}
                     roomId={roomId}
                     handleChangeRoomId={handleChangeRoomId}
                     inputFieldError={inputFieldError}
+                    isRoomFull={isRoomFull}
+                    isWaiting={isWaiting}
+                    handleLeaveRoom={handleLeaveRoom}
                 />
             </Grid>
         </Grid>
