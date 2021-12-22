@@ -14,7 +14,7 @@ const server = app.listen(PORT, () => {
 
 let io = socketIO(server);
 
-if(process.env.DEVELOPMENT && process.env.DEVELOPMENT === true){
+if(process.env.DEVELOPMENT && process.env.DEVELOPMENT === "true"){
     const cors = require('cors');
     app.use(cors());
 
