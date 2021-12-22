@@ -122,7 +122,7 @@ const Game = () => {
         );
         setMatrix(currentMatrix);
         setLastPlayer(playerNum);
-        updateDisplayGameText();
+        updateDisplayGameText(playerNum);
     }
 
     const handleChangeRoomId = (newRoomId) => {
@@ -155,11 +155,11 @@ const Game = () => {
         return 2;
     };
 
-    const updateDisplayGameText = () => {
+    const updateDisplayGameText = (currentPlayer) => {
         const gameStatus = checkGameStatus(matrix, numRows, numCols);
 
-        // who the fuck clicked the board now?
-        const currentPlayer = getNextPlayer(lastPlayer);
+        // who the fuck clicked the board now? ans=> currentPlayer ... 
+        // so now update the next state accordingly.
         const nextPlayer = getNextPlayer(currentPlayer);
 
         let displayText = "";
@@ -175,9 +175,9 @@ const Game = () => {
                 backgroundVariant = (nextPlayer === 1 ? "error" : "info");
             } else if (gameModeCPU === false && isLocalGame === false) {
                 // console.log(lastPlayer, currentPlayer, onlinePlayerNumber);
-                const wasPlayerLast = (currentPlayer === onlinePlayerNumber ? true : false); 
-                displayText = "Current Turn : " + (wasPlayerLast ? "Opponent" : "You");
-                backgroundVariant = "info"; 
+                const isPlayerNext = (currentPlayer === onlinePlayerNumber ? false : true); 
+                displayText = "Current Turn : " + (isPlayerNext ? "You" : "Opponent");
+                backgroundVariant = (nextPlayer === 1 ? "error":"info"); 
             }
 
         } else if (gameStatus === 1) {
@@ -231,9 +231,6 @@ const Game = () => {
         }); 
         setResetGame(true);
         setGameStarted(false);
-        // Make difficulty medium again
-        setDifficulty(2);
-
         socket.emit("leave-room",roomId);
     }
 
@@ -285,7 +282,7 @@ const Game = () => {
                 setLastPlayer(AI_VALUE);
             }
 
-            newGameText = "Current Turn: Player"; 
+            newGameText = "Current Turn : Player"; 
             newGameTextMUIBackground = ( PLAYER_VALUE === 1 ? "error" : "info" );
         }
 
@@ -338,11 +335,7 @@ const Game = () => {
                 gameTextMUIBackground: "",
             }); 
             setResetGame(true);
-            setIsLocalGame(false);
-            setRoomId("");
             setGameStarted(false);
-            // Make difficulty medium again
-            setDifficulty(2);
         } 
     };
 
@@ -394,7 +387,12 @@ const Game = () => {
             return;
         }
 
-        const currPlayer = getNextPlayer(lastPlayer);
+        let currPlayer = null;
+        if(gameModeCPU === false && isLocalGame === false){
+            currPlayer = onlinePlayerNumber;
+        } else {
+            currPlayer = getNextPlayer(lastPlayer);
+        }
 
         if (gameModeCPU === false && isLocalGame === true) {
             // multiplayer and local game
@@ -427,7 +425,7 @@ const Game = () => {
             }
             // console.log(data);
             socket.emit("click-board", data);
-            setLastPlayer(onlinePlayerNumber);
+            setLastPlayer(currPlayer);
 
         } else if (gameModeCPU === true) {
             // console.log("AI Game");
@@ -447,7 +445,7 @@ const Game = () => {
             getWinningPositions(currentMatrix, numRows, numCols)
         );
         setMatrix(currentMatrix);
-        updateDisplayGameText();
+        updateDisplayGameText(currPlayer);
     };
 
     return (

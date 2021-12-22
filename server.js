@@ -1,9 +1,10 @@
 const express = require("express");
 const app = express();
-const http = require('http');
 const path = require("path");
 const env = require('dotenv');
 env.config();
+
+const socketIO = require("socket.io");
 
 const PORT = process.env.PORT || 3001;
 
@@ -11,9 +12,18 @@ const server = app.listen(PORT, () => {
     console.log(`Server listening on ${PORT}`);
 });
 
-if(process.env.DEVELOPMENT === true){
+let io = socketIO(server);
+
+if(process.env.DEVELOPMENT && process.env.DEVELOPMENT === true){
     const cors = require('cors');
     app.use(cors());
+
+    io = socketIO((server), {
+        cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+        }
+    });
     app.get("/", (req, res) => {
     res.json({ message: "Hello from Dev server" });
     });
@@ -22,17 +32,6 @@ if(process.env.DEVELOPMENT === true){
     app.get('/', (req, res, next) => res.sendFile(__dirname + 'client/build/index.html'));
 }
 
-
-const socketIO = require("socket.io");
-
-const io = socketIO(server, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
-    }
-});
-
-  
 io.on("connection", (socket) => {
     // console.log(`Player : ${socket.id} is online`);
 
