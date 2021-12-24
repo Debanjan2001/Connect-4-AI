@@ -12,7 +12,8 @@ const server = app.listen(PORT, () => {
     console.log(`Server listening on ${PORT}`);
 });
 
-let io = socketIO(server);
+// define later according to purpose
+let io = null;
 
 if(process.env.DEVELOPMENT && process.env.DEVELOPMENT === "true"){
     const cors = require('cors');
@@ -20,14 +21,15 @@ if(process.env.DEVELOPMENT && process.env.DEVELOPMENT === "true"){
 
     io = socketIO((server), {
         cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
+            origin: "*",
+            methods: ["GET", "POST"]
         }
     });
     app.get("/", (req, res) => {
-    res.json({ message: "Hello from Dev server" });
+        res.json({ message: "Hello from Dev server" });
     });
 } else {
+    io = socketIO(server);
     app.use(express.static(path.join(__dirname, 'client/build')))
     app.get('/', (req, res, next) => res.sendFile(__dirname + 'client/build/index.html'));
 }
@@ -83,8 +85,17 @@ io.on("connection", (socket) => {
         socket.to(roomId).emit("broadcast-reset","Reset Board");
     })
 
+    socket.on('disconnecting', ()=>{
+        const rooms = socket.rooms;
+        for(const roomId of rooms){
+            if(roomId === socket.id){
+                continue;
+            }
+            socket.to(roomId).emit("broadcast-leave","Broadcasting Leave");
+        }
+    });
+
     socket.on(("disconnect"), ()=>{
-        socket.broadcast.emit("broadcast-leave","Broadcasting Leave");
         // console.log("Player Disconnected :" ,socket.id)
     });
 });
