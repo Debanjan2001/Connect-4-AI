@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  connect-4-ai:
+    build: .
+    container_name: connect-4-ai
+    ports:
+      - '3001:3001'
+    volumes:
+      - /app

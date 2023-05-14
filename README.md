@@ -55,6 +55,11 @@ npm run dev
 ```
 - Visit http://localhost:3000 and enjoy your day.
 
+### Method 3 (Docker) :
+```
+docker compose up
+``` 
+
 <hr>
 
 # Getting Started with Create React App
