@@ -5,7 +5,9 @@
 
 <hr>
 
-## Deployed with Heroku : [https://connect-4-bob.herokuapp.com/](https://connect-4-bob.herokuapp.com/)
+## ~~Deployed with Heroku : [https://connect-4-bob.herokuapp.com/](https://connect-4-bob.herokuapp.com/)~~
+## Deployed with DigitalOcean: [here](https://seal-app-aihn7.ondigitalocean.app/)
+
 
 ![Screenshot1](images/State3.png "Current Screenshot From Heroku Deploy")
 
